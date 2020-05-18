@@ -1,0 +1,29 @@
+Binding: worcs_project
+Title: WORCS project template
+OpenFiles: README.md, manuscript/manuscript.Rmd, preregistration.Rmd, prepare_data.R
+Icon: worcs.png
+
+Parameter: remote_repo
+Widget: TextInput
+Label: GitHub repository address
+Default: https
+
+Parameter: use_renv
+Widget: CheckboxInput
+Label: Use renv
+Default: On
+
+Parameter: manuscript
+Widget: SelectInput
+Label: Manuscript template
+Fields: APA6, github_document, None, ams_article, asa_article, biometrics_article, copernicus_article, ctex, elsevier_article, frontiers_article, ieee_article, joss_article, jss_article, mdpi_article, mnras_article, oup_article, peerj_article, plos_article, pnas_article, rjournal_article, rsos_article, sage_article, sim_article, springer_article, tf_article
+
+Parameter: preregistration
+Widget: SelectInput
+Label: Preregistration template
+Fields: COS, VantVeer, Brandt, AsPredicted, None
+
+Parameter: add_license
+Widget: SelectInput
+Label: Use license
+Fields: CC_BY_4.0, CC_BY-SA_4.0, CC_BY-NC_4.0, CC_BY-NC-SA_4.0, CC_BY-ND_4.0, CC_BY-NC-ND_4.0, None
