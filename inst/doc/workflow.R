@@ -5,3 +5,6 @@ knitr::opts_chunk$set(
 )
 library(worcs)
 
+## ---- echo = FALSE, out.width="100%"------------------------------------------
+knitr::include_graphics("workflow.png")
+
