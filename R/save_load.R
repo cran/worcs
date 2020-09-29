@@ -3,11 +3,15 @@
 #' \code{\link[utils:write.table]{write.csv}}), stores a checksum in '.worcs',
 #' and amends the \code{.gitignore} file to exclude \code{filename}.
 #' @param data A data.frame to save.
-#' @param filename Character, naming the file data should be written to.
+#' @param filename Character, naming the file data should be written to. By
+#' default, constructs a filename from the name of the object passed to
+#' \code{data}.
 #' @param codebook Character, naming the file the codebook should be written to.
 #' An 'R Markdown' codebook will be created and rendered to
 #' \code{\link[rmarkdown]{github_document}} ('markdown' for 'GitHub').
-#' Defaults to 'codebook.Rmd'. Set to \code{NULL} to avoid creating a codebook.
+#' By default, constructs a filename from the name of the object passed to
+#' \code{data}, adding the word 'codebook'.
+#' Set this argument to \code{NULL} to avoid creating a codebook.
 #' @param worcs_directory Character, indicating the WORCS project directory to
 #' which to save data. The default value \code{"."} points to the current
 #' directory.
@@ -20,14 +24,19 @@
 #' dir.create(test_dir)
 #' setwd(test_dir)
 #' worcs:::write_worcsfile(".worcs")
-#' open_data(iris[1:5, ], codebook = "bla.Rmd")
+#' df <- iris[1:5, ]
+#' open_data(df, codebook = "bla.Rmd")
 #' setwd(old_wd)
 #' unlink(test_dir, recursive = TRUE)
 #' @seealso open_data closed_data save_data
 #' @export
 #' @rdname open_data
-open_data <- function(data, filename = "data.csv", codebook = "codebook.Rmd", worcs_directory = ".", ...){
-  Args <- as.list(match.call()[-1])
+open_data <- function(data,
+                      filename = paste0(deparse(substitute(data)), ".csv"),
+                      codebook = paste0("codebook_", deparse(substitute(data)), ".Rmd"),
+                      worcs_directory = ".",
+                      ...){
+  Args <- all_args()
   Args$open <- TRUE
   do.call(save_data, Args)
 }
@@ -47,16 +56,19 @@ open_data <- function(data, filename = "data.csv", codebook = "codebook.Rmd", wo
 #' dir.create(test_dir)
 #' setwd(test_dir)
 #' worcs:::write_worcsfile(".worcs")
-#' closed_data(iris[1:10, ], codebook = NULL)
+#' df <- iris[1:10, ]
+#' closed_data(df, codebook = NULL)
 #' setwd(old_wd)
 #' unlink(test_dir, recursive = TRUE)
 #' @seealso open_data closed_data save_data
 #' @export
 #' @rdname closed_data
 closed_data <- function(data,
-                        filename = "data.csv",
-                        codebook = "codebook.Rmd", worcs_directory = ".", ...){
-  Args <- as.list(match.call()[-1])
+                        filename = paste0(deparse(substitute(data)), ".csv"),
+                        codebook = paste0("codebook_", deparse(substitute(data)), ".Rmd"),
+                        worcs_directory = ".",
+                        ...){
+  Args <- all_args()
   Args$open <- FALSE
   do.call(save_data, Args)
 }
@@ -64,11 +76,23 @@ closed_data <- function(data,
 #' @importFrom digest digest
 #' @importFrom utils write.csv
 save_data <- function(data,
-                      filename = "data.csv",
+                      filename = paste0(deparse(substitute(data)), ".csv"),
                       open,
-                      codebook = "codebook.Rmd", worcs_directory = "."){
+                      codebook = paste0("codebook_", deparse(substitute(data)), ".Rmd"),
+                      worcs_directory = "."){
+  if(grepl("[", filename, fixed = TRUE) | grepl("$", filename, fixed = TRUE)){
+    stop("This filename is not allowed: ", filename, ". Please specify a legal filename.", call. = FALSE)
+  }
   cl <- as.list(match.call()[-1])
   create_codebook <- !is.null(codebook)
+  if(create_codebook){
+    if(grepl("[", codebook, fixed = TRUE) | grepl("$", codebook, fixed = TRUE)){
+    stop("This codebook filename is not allowed: ", codebook, ". Please specify a legal filename.", call. = FALSE)
+    }
+    fn_code <- basename(codebook)
+    dn_code <- dirname(codebook)
+    fn_write_codebook <- file.path(dn_code, fn_code)
+  }
   # Filenames housekeeping
   dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory), ".worcs")))
   fn_worcs <- file.path(dn_worcs, ".worcs")
@@ -76,12 +100,14 @@ save_data <- function(data,
   fn_original <- basename(filename)
   dn_original <- dirname(filename)
   fn_synthetic <- paste0("synthetic_", fn_original)
+
   if(!dn_original == "."){
     fn_synthetic <- file.path(dn_original, fn_synthetic)
   }
-  fn_write_original <- file.path(dn_worcs, filename)
-  fn_write_synth <- file.path(dn_worcs, fn_synthetic)
-  fn_write_codebook <- file.path(dn_worcs, codebook)
+
+  fn_write_original <- file.path(dn_original, fn_original)
+  fn_write_synth <- file.path(dn_original, fn_synthetic)
+
   # End filenames
 
   # Remove this when worcs can handle different types:
@@ -180,7 +206,8 @@ save_data <- function(data,
 #' dir.create(test_dir)
 #' setwd(test_dir)
 #' worcs:::write_worcsfile(".worcs")
-#' suppressWarnings(closed_data(iris[1:5, ], codebook = NULL))
+#' df <- iris[1:5, ]
+#' suppressWarnings(closed_data(df, codebook = NULL))
 #' load_data()
 #' data
 #' rm("data")
@@ -327,8 +354,11 @@ check_recursive <- function(path){
              filename <- basename(path)
              cur_dir <- dirname(path)
              parent_dir <- dirname(dirname(path))
+             doesnt_exist <- any(grepl("No such file or directory", e$message))
              if(cur_dir == parent_dir){
-               stop("No '.worcs' file found in this directory or any of its parent directories; either this is not a worcs project, or the working directory is not set to the project directory.")
+               stop("No '.worcs' file found in this directory or any of its parent directories; either this is not a worcs project, or the working directory is not set to the project directory.", call. = FALSE)
+             } else if(doesnt_exist) {
+               stop("No '.worcs' file found, because the directory '", dirname(path), "' doesn't exists.", call. = FALSE)
              }
              check_recursive(file.path(parent_dir, filename))
            })
@@ -345,4 +375,3 @@ write_gitig <- function(filename, ..., modify = TRUE){
   }
   write(new_contents, filename, append = FALSE)
 }
-

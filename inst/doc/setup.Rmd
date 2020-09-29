@@ -14,7 +14,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-Before you can use the WORCS workflow and the full functionality of the `worcs` package, you have to install several software packages, and register on GitHub. You only have to perform these steps once, and the entire process should take approximately 1 hour if you start from scratch. In case some software is already installed on your system, you can skip related steps. Follow these steps in order:
+Before you can use the WORCS workflow and the full functionality of the `worcs` package, you have to install several software packages, and register on GitHub. This vignette does not assume a prior installation of `R`, so it is suitable for novice users.
+You only have to perform these steps once for every computer you intend to use `R` and `worcs` on, and the entire process should take approximately 30 minutes if you start from scratch.
+In case some software is already installed on your system, you can skip related steps. 
+
+Follow these steps in order:
 
 1. Install R from https://CRAN.R-project.org
 2. Install 'RStudio' Desktop (Free) from [rstudio.com](https://rstudio.com/products/rstudio/download/#download)
@@ -31,7 +35,7 @@ Before you can use the WORCS workflow and the full functionality of the `worcs` 
 4. Register on 'GitHub' (alternatively: see [this vignette](https://cjvanlissa.github.io/worcs/articles/git_cloud.html) on how to use 'GitLab' or 'Bitbucket')
     + Go to [github.com](https://github.com/) and click *Sign up*. Choose an "Individual", "Free" plan.
     + Request a [free academic upgrade](https://help.github.com/en/articles/applying-for-an-educator-or-researcher-discount). This allows you to create *private repositories*, which are only visible to you and selected collaborators, and can be made public when your work is published.
-5. Connect 'RStudio' to Git and GitHub (for more support, see [this 'RStudio' article](https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN), and [this blog post](https://www.r-bloggers.com/rstudio-and-github/))
+5. Connect 'RStudio' to Git and GitHub (for more support, see [this 'RStudio' article](https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN), and [this blog post](https://www.r-bloggers.com/2015/07/rstudio-and-github/))
     a. Open 'RStudio', open the Tools menu, click *Global Options*, and click *Git/SVN*
     b. Verify that *Enable version control interface for RStudio projects* is selected
     c. Verify that *Git executable:* shows the location of git.exe. If it is missing, manually fix the location of the file.
