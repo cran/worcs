@@ -22,13 +22,15 @@ has_git <- function(){
 #' 'Git' credentials. The default value uses \code{\link{has_git_user}}
 #' to set overwrite to \code{FALSE} if user credentials already exist, and to
 #' \code{TRUE} if no user credentials exist.
+#' @param verbose Logical. Whether or not to print status messages to
+#' the console. Default: TRUE
 #' @return No return value. This function is called for its side effects.
 #' @rdname git_user
 #' @examples
 #' do.call(git_user, worcs:::get_user())
 #' @export
 #' @importFrom gert git_config_global_set
-git_user <- function(name, email, overwrite = !has_git_user()){
+git_user <- function(name, email, overwrite = !has_git_user(), verbose = TRUE){
   if(overwrite){
     invisible(
       tryCatch({
@@ -40,8 +42,8 @@ git_user <- function(name, email, overwrite = !has_git_user()){
           name = "user.email",
           value = email
         ))
-        col_message("'Git' username set to '", name, "' and email set to '", email, "'.")
-      }, error = function(e){warning("Could not set 'Git' credentials.", call. = FALSE)})
+        col_message("'Git' username set to '", name, "' and email set to '", email, "'.", verbose = verbose)
+      }, error = function(e){col_message("Could not set 'Git' credentials.", success = FALSE)})
     )
   } else {
     message("To set the 'Git' username and email, call 'git_user()' with the argument 'overwrite = TRUE'.")
@@ -90,15 +92,15 @@ has_git_user <- function(){
 
 #' @title Add, commit, and push changes.
 #' @description This function is a wrapper for
-#' \code{\link[gert:commit]{git_add}}, \code{\link[gert:commit]{git_commit}},
+#' \code{\link[gert:git_add]{git_add}}, \code{\link[gert:git_commit]{git_commit}},
 #' and
-#' \code{\link[gert:fetch]{git_push}}. It adds all locally changed files to the
+#' \code{\link[gert:git_push]{git_push}}. It adds all locally changed files to the
 #' staging area of the local 'Git' repository, then commits these changes
 #' (with an optional) \code{message}, and then pushes them to a remote
 #' repository. This is used for making a "cloud backup" of local changes.
 #' Do not use this function when working with privacy sensitive data,
 #' or any other file that should not be pushed to a remote repository.
-#' The \code{\link[gert:commit]{git_add}} argument
+#' The \code{\link[gert:git_add]{git_add}} argument
 #' \code{force} is disabled by default,
 #' to avoid accidentally committing and pushing a file that is listed in
 #' \code{.gitignore}.
@@ -131,10 +133,10 @@ git_update <- function(message = paste0("update ", Sys.time()),
                        ssh_key,
                        mirror,
                        force,
-                       verbose){
+                       verbose = TRUE){
   tryCatch({
     git_ls(repo)
-    col_message("Identified local 'Git' repository.")
+    col_message("Identified local 'Git' repository.", verbose = verbose)
   }, error = function(e){
     col_message("Not a 'Git' repository.", success = FALSE)
     col_message("Could not add files to staging area of 'Git' repository.", success = FALSE)
@@ -159,19 +161,19 @@ git_update <- function(message = paste0("update ", Sys.time()),
   invisible(
     tryCatch({
       do.call(git_add, Args_add)
-      col_message("Added files to staging area of 'Git' repository.")
+      col_message("Added files to staging area of 'Git' repository.", verbose = verbose)
     }, error = function(e){col_message("Could not add files to staging area of 'Git' repository.", success = FALSE)})
   )
   invisible(
     tryCatch({
       do.call(git_commit, Args_commit)
-      col_message("Committed staged files to 'Git' repository.")
+      col_message("Committed staged files to 'Git' repository.", verbose = verbose)
     }, error = function(e){col_message("Could not commit staged files to 'Git' repository.", success = FALSE)})
   )
   invisible(
     tryCatch({
       do.call(git_push, Args_push)
-      col_message("Pushed local commits to remote repository.")
+      col_message("Pushed local commits to remote repository.", verbose = verbose)
     }, error = function(e){col_message("Could not push local commits to remote repository.", success = FALSE)})
   )
 }
