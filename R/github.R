@@ -1,3 +1,45 @@
+#' @title Modify .gitignore file
+#' @description Arguments passed through \code{...} are added to the .gitignore
+#' file. Elements already present in the file are modified.
+#' When \code{ignore = TRUE}, the arguments are added to the .gitignore file,
+#' which will cause 'Git' to not track them.
+#'
+#' When \code{ignore = FALSE}, the arguments are prepended with \code{!},
+#' This works as a "double negation", and will cause 'Git' to track the files.
+#' @param ... Any number of character arguments, representing files to be added
+#' to the .gitignore file.
+#' @param ignore Logical. Whether or not 'Git' should ignore these files.
+#' @param repo a path to an existing repository, or a git_repository object as
+#' returned by git_open, git_init or git_clone.
+#' @return No return value. This function is called for its side effects.
+#' @rdname git_ignore
+#' @examples
+#' dir.create(".git")
+#' git_ignore("ignorethis.file")
+#' unlink(".git", recursive = TRUE)
+#' file.remove(".gitignore")
+#' @export
+git_ignore <- function(..., ignore = TRUE, repo = "."){
+  ab_path <- normalizePath(repo)
+  if(!dir.exists(file.path(ab_path, ".git"))){
+    stop("No valid Git repository exists at ", normalizePath(file.path(ab_path, ".git")), call. = FALSE)
+  }
+  dots <- unlist(list(...))
+  path_gitig <- file.path(ab_path, ".gitignore")
+  cl <- match.call()
+  cl[[1L]] <- str2lang("worcs:::write_gitig")
+  cl[["filename"]] <- path_gitig
+  cl[c("ignore", "repo")] <- NULL
+  cl[["modify"]] <- file.exists(path_gitig)
+  if(!ignore){
+    ig_these <- names(cl) == "" & sapply(cl, class) == "character"
+    if(any(ig_these)){
+      cl[ig_these] <- lapply(cl[ig_these], function(x){ paste0("!", x) })
+    }
+  }
+  eval(cl, parent.frame())
+}
+
 #' @importFrom gert libgit2_config git_config_global
 has_git <- function(){
   tryCatch({
@@ -176,4 +218,17 @@ git_update <- function(message = paste0("update ", Sys.time()),
       col_message("Pushed local commits to remote repository.", verbose = verbose)
     }, error = function(e){col_message("Could not push local commits to remote repository.", success = FALSE)})
   )
+}
+
+
+parse_repo <- function(remote_repo, verbose = TRUE){
+  valid_repo <- grepl("^git@.+?\\..+?:.+?/.+?(\\.git)?$", remote_repo) | grepl("^https://.+?\\..+?/.+?/.+?(\\.git)?$", remote_repo)
+  if(!valid_repo){
+    col_message("Not a valid 'Git' remote repository address: ", remote_repo, success = FALSE, verbose = verbose)
+    return(NULL)
+  }
+  repo_url <- gsub("(^.+?@)(.*)$", "\\2", remote_repo)
+  repo_url <- gsub("(\\..+?):", "\\1/", repo_url)
+  repo_url <- gsub("\\.git$", "", repo_url)
+  gsub("^(https://)?", "https://", repo_url)
 }

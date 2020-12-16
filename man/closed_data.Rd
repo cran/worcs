@@ -9,6 +9,7 @@ closed_data(
   filename = paste0(deparse(substitute(data)), ".csv"),
   codebook = paste0("codebook_", deparse(substitute(data)), ".Rmd"),
   worcs_directory = ".",
+  synthetic = TRUE,
   ...
 )
 }
@@ -30,6 +31,10 @@ Set this argument to \code{NULL} to avoid creating a codebook.}
 which to save data. The default value \code{"."} points to the current
 directory.}
 
+\item{synthetic}{Logical, indicating whether or not to create a synthetic
+dataset using the \code{\link{synthetic}} function. Additional arguments for
+the call to \code{\link{synthetic}} can be passed through \code{...}.}
+
 \item{...}{Additional arguments passed to and from functions.}
 }
 \value{
@@ -44,12 +49,12 @@ synthetic copy of \code{data} for public use. To generate these synthetic
 data, the function \code{\link{synthetic}} is used.
 }
 \examples{
-test_dir <- file.path(tempdir(), "data")
 old_wd <- getwd()
+test_dir <- file.path(tempdir(), "data")
 dir.create(test_dir)
 setwd(test_dir)
 worcs:::write_worcsfile(".worcs")
-df <- iris[1:10, ]
+df <- iris[1:3, ]
 closed_data(df, codebook = NULL)
 setwd(old_wd)
 unlink(test_dir, recursive = TRUE)

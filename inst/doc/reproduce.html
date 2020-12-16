@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Reproducing a WORCS project</title>
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Reproducing a WORCS project</h1>
+
+
+
+<p>This is a tutorial on how to reproduce a project created with the <code>worcs</code> package. At the core of a typical <code>worcs</code> projects is an ‘R Markdown’ document, containing prose and analysis code. This document can be compiled, or “knitted”, to reproduce the analyses. This tutorial will guide you through the steps necessary to make that happen.</p>
+<div id="install-rstudio-and-r" class="section level2">
+<h2>Install ‘RStudio’ and ‘R’</h2>
+<p><strong>You can skip these steps if you have a recent and working installation of ‘RStudio’ and ‘R’.</strong></p>
+<ol style="list-style-type: decimal">
+<li>Install R from <a href="https://CRAN.R-project.org" class="uri">https://CRAN.R-project.org</a></li>
+<li>Install ‘RStudio’ Desktop (Free) from <a href="https://rstudio.com/products/rstudio/download/#download">rstudio.com</a></li>
+</ol>
+</div>
+<div id="install-r-package-dependencies" class="section level2">
+<h2>Install R-package dependencies</h2>
+<ol style="list-style-type: decimal">
+<li>Install all packages required for WORCS by running the following code in the ‘RStudio’ console. Be prepared for three contingencies:
+<ul>
+<li>If you receive any error saying <em>There is no package called [package name]</em>, then run the code <code>install.packages(&quot;package name&quot;)</code><br />
+</li>
+<li>If you are prompted to update packages, just press [ENTER] to avoid updating packages. Updating packages this way in an interactive session sometimes leads to errors if the packages are loaded.<br />
+</li>
+<li>If you see a pop-up dialog asking <em>Do you want to install from sources the package which needs compilation?</em>, click <em>No</em>.</li>
+</ul></li>
+</ol>
+<pre><code>install.packages(&quot;worcs&quot;, dependencies = TRUE)
+tinytex::install_tinytex()
+renv::consent(provided = TRUE)</code></pre>
+</div>
+<div id="obtaining-the-project-repository" class="section level2">
+<h2>Obtaining the project repository</h2>
+<p>WORCS projects are typically hosted on ‘GitHub’, or another ‘Git’ remote repository. If you are familiar with ‘Git’ and ‘GitHub’, you can “clone” the project as usual.</p>
+<p>If you are not familiar with these tools, you can download the project repository from the remote repository through the web interface.</p>
+<p>On ‘GitHub’, this is done by clicking the green button labeled “Code”. Clicking it reveals the option “Download ZIP” (see below), which allows you to download a compressed archive of the project. This can be unpacked using ZIP tools, which are integrated in most operating systems.</p>
+<p><img src="data:image/png;base64,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" /></p>
+</div>
+<div id="open-the-project-in-rstudio" class="section level2">
+<h2>Open the project in ‘RStudio’</h2>
+<p>Most projects can be opened by loading the ‘.RProj’ file in the main folder. This should be explained in the project ‘README.md’ as well.</p>
+</div>
+<div id="restore-the-package-dependencies" class="section level2">
+<h2>Restore the package dependencies</h2>
+<p>You will need to restore the packages used by the authors, using the <code>renv</code> package. See <a href="https://rstudio.github.io/renv/articles/renv.html">this article</a> for more information about <code>renv</code>.</p>
+<p>With the project open in ‘RStudio’, type the following in the console:</p>
+<pre><code>renv::restore()</code></pre>
+</div>
+<div id="open-the-project-entry-point" class="section level2">
+<h2>Open the project entry point</h2>
+<p>The entry point is the core document that can be executed to reproduce the analysis. This is typically a manuscript, or occasionally an R-script file. Use the following function to open the entry point file in ‘RStudio’:</p>
+<pre><code>load_entrypoint()</code></pre>
+</div>
+<div id="reproduce-the-analyses" class="section level2">
+<h2>Reproduce the analyses</h2>
+<p>If the entry point has the extention ‘.Rmd’, press the button labelled ‘Knit’ in the editor to compile it and run the analyses contained therein. If the entry point has the extention ‘.R’, press the ‘Run’ button instead. The resulting document should reproduce the original work.</p>
+</div>
+<div id="no-access-to-original-data" class="section level2">
+<h2>No access to original data</h2>
+<p>Sometimes, authors have not made the original data available. In this case, the project ought to contain a synthetic data file with similar properties to the original data. This synthetic data allows you to verify that the analyses can be run, and that the code is correct. The results will likely deviate (substantially) from the original findings.</p>
+<p>Authors may use the function <code>notify_synthetic()</code> to generate a message in the paper when a synthetic dataset is used. Authors should also provide information in the README.md file on how to obtain access to the original data in case an audit is warranted. Please read the WORCS paper <span class="citation">[@vanlissaWORCSWorkflowOpen2020]</span> for more information about how checksums are used so that auditers can verify the authenticity of the original data.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
