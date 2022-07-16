@@ -21,7 +21,7 @@ In case some of the software is already installed on your system, you can skip t
 Follow these steps in order:
 
 1. Install R from https://CRAN.R-project.org
-2. Install 'RStudio' Desktop (Free) from [rstudio.com](https://rstudio.com/products/rstudio/download/#download)
+2. Install 'RStudio' Desktop (Free) from [rstudio.com](https://www.rstudio.com/products/rstudio/download/)
 3. Install Git from [git-scm.com](https://git-scm.com/downloads). Use the default, recommended settings. It is especially important to leave these settings selected:
     + Git from the command line and also from third party software  
     <!--*The `worcs` R-package calls Git from the command line*-->
@@ -34,8 +34,8 @@ Follow these steps in order:
     + If you run into any trouble, a more comprehensive tutorial on installing Git is available at [happygitwithr.com](https://happygitwithr.com/install-git.html).
 4. Register on 'GitHub' (alternatively: see [this vignette](https://cjvanlissa.github.io/worcs/articles/git_cloud.html) on how to use 'GitLab' or 'Bitbucket')
     + Go to [github.com](https://github.com/) and click *Sign up*. Choose an "Individual", "Free" plan.
-    + Request a [free academic upgrade](https://help.github.com/en/articles/applying-for-an-educator-or-researcher-discount). This allows you to create *private repositories*, which are only visible to you and selected collaborators, and can be made public when your work is published.
-5. Connect 'RStudio' to Git and GitHub (for more support, see [this 'RStudio' article](https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN), and [this blog post](https://www.r-bloggers.com/2015/07/rstudio-and-github/))
+    <!-- + Request a [free academic upgrade](https://help.github.com/en/articles/applying-for-an-educator-or-researcher-discount). This allows you to create *private repositories*, which are only visible to you and selected collaborators, and can be made public when your work is published. -->
+5. Connect 'RStudio' to Git and GitHub (for more support, see [Happy Git with R](https://happygitwithr.com/)
     a. Open 'RStudio', open the Tools menu, click *Global Options*, and click *Git/SVN*
     b. Verify that *Enable version control interface for RStudio projects* is selected
     c. Verify that *Git executable:* shows the location of git.exe. If it is missing, manually fix the location of the file.
@@ -56,16 +56,25 @@ Follow these steps in order:
 install.packages("worcs", dependencies = TRUE)
 tinytex::install_tinytex()
 renv::consent(provided = TRUE)
-worcs::git_user("your_name", "your_email")
+```
+
+If you do not have a Git user set up on your computer yet (e.g., if this is the first time you will be using Git), run the following - making sure to substitute your actual username and email:
+
+```
+worcs::git_user("your_name", "your_email", overwrite = TRUE)
 ```
 
 If you intend to write documents in APA style, you should additionally install the `papaja` package.
+Because `papaja` has many dependencies, it is recommended to skip this step if you intend to write documents in a different style than APA.
 Unfortunately, this package is not yet available on the central R repository CRAN, but you can install it from 'GitHub' using the following code:
 
 ```
-remotes::install_github("crsh/papaja", dependencies = TRUE, update = "never")
+install.packages("papaja", dependencies = TRUE, update = "never")
 ```
 
-Because `papaja` has many dependencies, it is recommended to skip this step if you intend to write documents in a different style than APA.
+Everything should be installed and connected now. You can verify your installation using the convenience function `worcs::check_worcs_installation()`. It will run a test suite and print the results; in case any tests fail, it will provide a hint for how to resolve it:
 
-That's it! Everything should be installed and connected now.
+```
+worcs::check_worcs_installation()
+```
+

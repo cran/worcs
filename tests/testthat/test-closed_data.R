@@ -9,7 +9,7 @@ test_that("save and load", {
   worcs:::write_worcsfile(file.path(tempdir(), the_test, ".worcs"))
   on.exit(unlink(test_dir, recursive = TRUE), add = TRUE)
 
-  open_data(iris[1:5, ], filename = "iris.csv", codebook = "codebook_iris.Rmd")
+  open_data(iris[1:5, ], filename = "iris.csv", codebook = "codebook_iris.Rmd", value_labels = 'value_labels_iris.yml')
   checksums <- read_yaml(".worcs")
 
   expect_equivalent(checksums$checksums$iris.csv, digest("iris.csv", file = TRUE))
@@ -29,7 +29,8 @@ test_that("save and load", {
 
   # test_that("loading open data fails when data changed", {
   expect_error({load_data()})
-
+  #rm(iris)
+  #data("iris")
   set.seed(555)
   closed_data(iris, codebook = NULL)
   checksums <- read_yaml(".worcs")
@@ -44,7 +45,7 @@ test_that("save and load", {
   expect_equivalent(checksums$checksums$synthetic_iris.csv, digest("synthetic_iris.csv", file = TRUE))
 
   # test_that("loading open data works", {
-  expect_error({load_data()}, NA)
+  expect_error({suppressWarnings(load_data())}, NA)
 
   file.remove("iris.csv")
 
@@ -71,13 +72,13 @@ test_that("save and load", {
   closed_data(cars)
   file.remove("cars.csv")
   list.files()
-  expect_error(load_data(), NA)
+  expect_error(suppressWarnings(load_data()), NA)
   #cat(ls())
   #rm("iris")
   # test_that("loading open data succeeds when loading from a subdirectory", {
-  skip_if_not(Sys.info()["user"] == "Lissa102")
+  skip_if_not(Sys.info()["user"] %in% c("Lissa102", "Studio"))
   dir.create("manuscript")
-  expect_error({load_data("manuscript")}, NA)
+  expect_error({suppressWarnings(load_data("manuscript"))}, NA)
 
   # Check whether you can pass additional arguments to synthetic
   closed_data(df, codebook = NULL, model_expression = NULL, predict_expression = sample(y, length(y), replace = TRUE))

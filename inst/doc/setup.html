@@ -14,19 +14,16 @@
 
 <title>Setting up your computer for WORCS</title>
 
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
   }
 });
 </script>
@@ -39,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
   div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
   ul.task-list{list-style: none;}
     </style>
+
 
 
 
@@ -241,12 +239,22 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<p>This is a tutorial on how to set up your personal computer for use with the <code>worcs</code> package. It guides you through the installation of several software packages, and registration on GitHub. This vignette does not assume a prior installation of <code>R</code>, so it is suitable for novice users. You only have to perform these steps once for every computer you intend to use <code>R</code> and <code>worcs</code> on, and the entire process should take approximately 30 minutes if you start from scratch. In case some of the software is already installed on your system, you can skip those related steps.</p>
+<p>This is a tutorial on how to set up your personal computer for use
+with the <code>worcs</code> package. It guides you through the
+installation of several software packages, and registration on GitHub.
+This vignette does not assume a prior installation of <code>R</code>, so
+it is suitable for novice users. You only have to perform these steps
+once for every computer you intend to use <code>R</code> and
+<code>worcs</code> on, and the entire process should take approximately
+30 minutes if you start from scratch. In case some of the software is
+already installed on your system, you can skip those related steps.</p>
 <p>Follow these steps in order:</p>
 <ol style="list-style-type: decimal">
 <li>Install R from <a href="https://CRAN.R-project.org" class="uri">https://CRAN.R-project.org</a></li>
-<li>Install ‘RStudio’ Desktop (Free) from <a href="https://rstudio.com/products/rstudio/download/#download">rstudio.com</a></li>
-<li>Install Git from <a href="https://git-scm.com/downloads">git-scm.com</a>. Use the default, recommended settings. It is especially important to leave these settings selected:
+<li>Install ‘RStudio’ Desktop (Free) from <a href="https://www.rstudio.com/products/rstudio/download/">rstudio.com</a></li>
+<li>Install Git from <a href="https://git-scm.com/downloads">git-scm.com</a>. Use the default,
+recommended settings. It is especially important to leave these settings
+selected:
 <ul>
 <li>Git from the command line and also from third party software<br />
 <!--*The `worcs` R-package calls Git from the command line*--></li>
@@ -256,43 +264,76 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <!--*This is the preferred setting when collaborating with others on different platforms. Be prepared that, on windows, you will receive harmless notifications about LF to CRLF line endings.  *--></li>
 <li>Enable Git Credential Manager<br />
 <!--*For logging in to GitHub*--></li>
-<li>If you run into any trouble, a more comprehensive tutorial on installing Git is available at <a href="https://happygitwithr.com/install-git.html">happygitwithr.com</a>.</li>
+<li>If you run into any trouble, a more comprehensive tutorial on
+installing Git is available at <a href="https://happygitwithr.com/install-git.html">happygitwithr.com</a>.</li>
 </ul></li>
-<li>Register on ‘GitHub’ (alternatively: see <a href="https://cjvanlissa.github.io/worcs/articles/git_cloud.html">this vignette</a> on how to use ‘GitLab’ or ‘Bitbucket’)
+<li>Register on ‘GitHub’ (alternatively: see <a href="https://cjvanlissa.github.io/worcs/articles/git_cloud.html">this
+vignette</a> on how to use ‘GitLab’ or ‘Bitbucket’)
 <ul>
-<li>Go to <a href="https://github.com/">github.com</a> and click <em>Sign up</em>. Choose an “Individual”, “Free” plan.</li>
-<li>Request a <a href="https://help.github.com/en/articles/applying-for-an-educator-or-researcher-discount">free academic upgrade</a>. This allows you to create <em>private repositories</em>, which are only visible to you and selected collaborators, and can be made public when your work is published.</li>
+<li>Go to <a href="https://github.com/">github.com</a> and click
+<em>Sign up</em>. Choose an “Individual”, “Free” plan.
+<!-- + Request a [free academic upgrade](https://help.github.com/en/articles/applying-for-an-educator-or-researcher-discount). This allows you to create *private repositories*, which are only visible to you and selected collaborators, and can be made public when your work is published. --></li>
 </ul></li>
-<li>Connect ‘RStudio’ to Git and GitHub (for more support, see <a href="https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN">this ‘RStudio’ article</a>, and <a href="https://www.r-bloggers.com/2015/07/rstudio-and-github/">this blog post</a>)
+<li>Connect ‘RStudio’ to Git and GitHub (for more support, see <a href="https://happygitwithr.com/">Happy Git with R</a>
 <ol style="list-style-type: lower-alpha">
-<li>Open ‘RStudio’, open the Tools menu, click <em>Global Options</em>, and click <em>Git/SVN</em></li>
-<li>Verify that <em>Enable version control interface for RStudio projects</em> is selected</li>
-<li>Verify that <em>Git executable:</em> shows the location of git.exe. If it is missing, manually fix the location of the file.</li>
-<li>Click <em>Create RSA Key</em>. Do not enter a passphrase. Press <em>Create</em>. A window with some information will open, which you can close.</li>
-<li>Click <em>View public key</em>, and copy the entire text to the clipboard.</li>
-<li>Close ‘RStudio’ (it might offer to restart by itself; this is fine)</li>
+<li>Open ‘RStudio’, open the Tools menu, click <em>Global Options</em>,
+and click <em>Git/SVN</em></li>
+<li>Verify that <em>Enable version control interface for RStudio
+projects</em> is selected</li>
+<li>Verify that <em>Git executable:</em> shows the location of git.exe.
+If it is missing, manually fix the location of the file.</li>
+<li>Click <em>Create RSA Key</em>. Do not enter a passphrase. Press
+<em>Create</em>. A window with some information will open, which you can
+close.</li>
+<li>Click <em>View public key</em>, and copy the entire text to the
+clipboard.</li>
+<li>Close ‘RStudio’ (it might offer to restart by itself; this is
+fine)</li>
 <li>Go to <a href="https://github.com/">github.com</a></li>
-<li>Click your user icon, click <em>Settings</em>, and then select the <em>SSH and GPG keys</em> tab.</li>
-<li>Click <em>New SSH key</em>. Give it an arbitrary name (e.g., your computer ID), and paste the public key from your clipboard into the box labeled <em>Key</em>.</li>
+<li>Click your user icon, click <em>Settings</em>, and then select the
+<em>SSH and GPG keys</em> tab.</li>
+<li>Click <em>New SSH key</em>. Give it an arbitrary name (e.g., your
+computer ID), and paste the public key from your clipboard into the box
+labeled <em>Key</em>.</li>
 <li>Open ‘RStudio’ again (unless it restarted by itself)</li>
 </ol></li>
-<li>Install all packages required for WORCS by running the following code in the ‘RStudio’ console. Be prepared for three contingencies:
+<li>Install all packages required for WORCS by running the following
+code in the ‘RStudio’ console. Be prepared for three contingencies:
 <ul>
-<li>If you receive any error saying <em>There is no package called [package name]</em>, then run the code <code>install.packages(&quot;package name&quot;)</code><br />
+<li>If you receive any error saying <em>There is no package called
+[package name]</em>, then run the code
+<code>install.packages(&quot;package name&quot;)</code><br />
 </li>
-<li>If you are prompted to update packages, just press [ENTER] to avoid updating packages. Updating packages this way in an interactive session sometimes leads to errors if the packages are loaded.<br />
+<li>If you are prompted to update packages, just press [ENTER] to avoid
+updating packages. Updating packages this way in an interactive session
+sometimes leads to errors if the packages are loaded.<br />
 </li>
-<li>If you see a pop-up dialog asking <em>Do you want to install from sources the package which needs compilation?</em>, click <em>No</em>.</li>
+<li>If you see a pop-up dialog asking <em>Do you want to install from
+sources the package which needs compilation?</em>, click
+<em>No</em>.</li>
 </ul></li>
 </ol>
 <pre><code>install.packages(&quot;worcs&quot;, dependencies = TRUE)
 tinytex::install_tinytex()
-renv::consent(provided = TRUE)
-worcs::git_user(&quot;your_name&quot;, &quot;your_email&quot;)</code></pre>
-<p>If you intend to write documents in APA style, you should additionally install the <code>papaja</code> package. Unfortunately, this package is not yet available on the central R repository CRAN, but you can install it from ‘GitHub’ using the following code:</p>
-<pre><code>remotes::install_github(&quot;crsh/papaja&quot;, dependencies = TRUE, update = &quot;never&quot;)</code></pre>
-<p>Because <code>papaja</code> has many dependencies, it is recommended to skip this step if you intend to write documents in a different style than APA.</p>
-<p>That’s it! Everything should be installed and connected now.</p>
+renv::consent(provided = TRUE)</code></pre>
+<p>If you do not have a Git user set up on your computer yet (e.g., if
+this is the first time you will be using Git), run the following -
+making sure to substitute your actual username and email:</p>
+<pre><code>worcs::git_user(&quot;your_name&quot;, &quot;your_email&quot;, overwrite = TRUE)</code></pre>
+<p>If you intend to write documents in APA style, you should
+additionally install the <code>papaja</code> package. Because
+<code>papaja</code> has many dependencies, it is recommended to skip
+this step if you intend to write documents in a different style than
+APA. Unfortunately, this package is not yet available on the central R
+repository CRAN, but you can install it from ‘GitHub’ using the
+following code:</p>
+<pre><code>install.packages(&quot;papaja&quot;, dependencies = TRUE, update = &quot;never&quot;)</code></pre>
+<p>Everything should be installed and connected now. You can verify your
+installation using the convenience function
+<code>worcs::check_worcs_installation()</code>. It will run a test suite
+and print the results; in case any tests fail, it will provide a hint
+for how to resolve it:</p>
+<pre><code>worcs::check_worcs_installation()</code></pre>
 
 
 

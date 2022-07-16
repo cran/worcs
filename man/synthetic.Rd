@@ -75,7 +75,6 @@ Other types of variables should be converted to one of these types, or users
 can use a custom \code{model_expression} and \code{predict_expressio}
 when calling \code{synthetic}.
 
-
 Note that for data synthesis to work properly, it is essential that the
 \code{class} of variables is defined correctly. The default algorithm
 \code{\link[ranger]{ranger}} supports numeric, integer, factor, and logical
@@ -95,6 +94,7 @@ but loses all marginal relationships. These examples are not exhaustive, and
 users can even create custom functions.
 }
 \examples{
+\dontrun{
 # Example using the iris dataset and default ranger algorithm
 iris_syn <- synthetic(iris)
 
@@ -107,12 +107,12 @@ synthetic(dat,
                                 data = data.frame(.outcome = y,
                                 xsynth)),
           predict_expression = predict(model, newdata = xsynth))
-
+}
 # Example using bootstrapping:
 synthetic(iris,
           model_expression = NULL,
           predict_expression = sample(y, size = length(y), replace = TRUE))
-
+\dontrun{
 # Example with missing data, no imputation
 iris_missings <- iris
 for(i in 1:10){
@@ -141,8 +141,9 @@ imp_fun <- function(x){
 iris_miss_syn <- synthetic(iris_missings,
                            missingness_expression = imp_fun(data))
 }
+}
 \references{
 Nowok, B., Raab, G.M and Dibben, C. (2016).
 synthpop: Bespoke creation of synthetic data in R. Journal of Statistical
-Software, 74(11), 1-26. <doi:10.18637/jss.v074.i11>.
+Software, 74(11), 1-26. \doi{10.18637/jss.v074.i11}.
 }

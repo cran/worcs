@@ -31,7 +31,7 @@
 #' successful. This function is mostly called for its side effect of rendering
 #' an 'R Markdown' codebook.
 #' @examples
-#' if(rmarkdown::pandoc_available("1.14")){
+#' if(rmarkdown::pandoc_available("2.0")){
 #'   library(rmarkdown)
 #'   library(knitr)
 #'   filename <- tempfile("codebook", fileext = ".Rmd")
@@ -155,7 +155,7 @@ make_codebook <-
     })
     if (render_file) {
       function_success <- function_success | tryCatch({
-        render(filename)
+        render(filename, quiet = TRUE)
         TRUE
       }, error = function(e) {
         return(FALSE)

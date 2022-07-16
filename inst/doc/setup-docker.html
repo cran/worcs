@@ -14,19 +14,16 @@
 
 <title>Setting up your computer for WORCS - Docker-edition</title>
 
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
   }
 });
 </script>
@@ -41,21 +38,29 @@ document.addEventListener('DOMContentLoaded', function() {
     </style>
 
 
-<style type="text/css">code{white-space: pre;}</style>
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
 <style type="text/css" data-origin="pandoc">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -75,7 +80,7 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -325,30 +330,36 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Setting up your computer for WORCS - Docker-edition</h1>
+<h1 class="title toc-ignore">Setting up your computer for WORCS -
+Docker-edition</h1>
 
 
 
-<p>If you do not want to install R, RStudio, Latex and Git on a personal computer (as described in <a href="https://cjvanlissa.github.io/worcs/articles/setup.html"><code>vignette(&quot;setup&quot;, package = &quot;worcs&quot;)</code></a>), but would like to use Docker instead, follow these steps in order:</p>
+<p>If you do not want to install R, RStudio, Latex and Git on a personal
+computer (as described in <a href="https://cjvanlissa.github.io/worcs/articles/setup.html"><code>vignette(&quot;setup&quot;, package = &quot;worcs&quot;)</code></a>),
+but would like to use Docker instead, follow these steps in order:</p>
 <ol style="list-style-type: decimal">
 <li>Install <a href="https://docs.docker.com/get-docker/">Docker</a></li>
 <li>Open a terminal/cmd/shell.</li>
 <li>Start the <code>worcs</code> image:</li>
 </ol>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="ex">docker</span> run -e PASSWORD=secret -p 8787:8787 -it cjvanlissa/worcs:latest</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-e</span> PASSWORD=secret <span class="at">-p</span> 8787:8787 <span class="at">-it</span> cjvanlissa/worcs:latest</span></code></pre></div>
 <ol start="3" style="list-style-type: decimal">
-<li>Open the address <code>127.0.0.1:8787/</code> in a browser. Login using username=rstudio and password=secret.</li>
+<li>Open the address <code>127.0.0.1:8787/</code> in a browser. Login
+using username=rstudio and password=secret.</li>
 </ol>
 <p>Then setup the container.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>renv<span class="op">::</span><span class="kw">consent</span>(<span class="dt">provided =</span> <span class="ot">TRUE</span>)</span>
-<span id="cb2-2"><a href="#cb2-2"></a>worcs<span class="op">::</span><span class="kw">git_user</span>(<span class="st">&quot;your_name&quot;</span>, <span class="st">&quot;your_email&quot;</span>)</span></code></pre></div>
-<p>To terminate the container, press Ctrl + C in the terminal. To save files from a Docker session on your disk, you have to link a directory explicitly when starting the container.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>renv<span class="sc">::</span><span class="fu">consent</span>(<span class="at">provided =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">git_user</span>(<span class="st">&quot;your_name&quot;</span>, <span class="st">&quot;your_email&quot;</span>)</span></code></pre></div>
+<p>To terminate the container, press Ctrl + C in the terminal. To save
+files from a Docker session on your disk, you have to link a directory
+explicitly when starting the container.</p>
 <p>On Unix file systems, this is done as follows:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">-v</span> /path/on/your/pc:/home/rstudio</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">-v</span> /path/on/your/pc:/home/rstudio</span></code></pre></div>
 <p>And on Windows file systems, as follows:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">-v</span> //c/path/on/your/windows/pc:/home/rstudio</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">-v</span> //c/path/on/your/windows/pc:/home/rstudio</span></code></pre></div>
 <p>Then start the Docker session using this command:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="ex">docker</span> run -e PASSWORD=secret -p 8787:8787 -v /path/on/your/pc:/home/rstudio -it cjvanlissa/worcs:latest</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-e</span> PASSWORD=secret <span class="at">-p</span> 8787:8787 <span class="at">-v</span> /path/on/your/pc:/home/rstudio <span class="at">-it</span> cjvanlissa/worcs:latest</span></code></pre></div>
 <p>That’s it!</p>
 
 

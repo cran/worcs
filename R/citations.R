@@ -14,7 +14,7 @@
 #' # Only specify it as custom knit function in an 'R Markdown' file, like so:
 #' # knit: worcs::cite_all
 #'
-#' if (rmarkdown::pandoc_available("1.14")){
+#' if (rmarkdown::pandoc_available("2.0")){
 #'   file_name <- file.path(tempdir(), "citeall.Rmd")
 #'   loc <- rmarkdown::draft(file_name,
 #'                           template = "github_document",
@@ -45,7 +45,7 @@ cite_all <- function(...){
 #' # Only specify it as custom knit function in an R Markdown file, like so:
 #' # knit: worcs::cite_all
 #'
-#' if (rmarkdown::pandoc_available("1.14")){
+#' if (rmarkdown::pandoc_available("2.0")){
 #'   file_name <- tempfile("citeessential", fileext = ".Rmd")
 #'   rmarkdown::draft(file_name,
 #'                    template = "github_document",
@@ -62,8 +62,8 @@ cite_essential <- function(...){
 
 #' @importFrom rmarkdown render pandoc_available
 comprehensive_cite <- function(input, encoding = "UTF-8", ..., citeall = TRUE) {
-  if(!pandoc_available("1.14")){
-    message("Using rmarkdown requires pandoc version >= 1.14.")
+  if(!pandoc_available("2.0")){
+    message("Using rmarkdown requires pandoc version >= 2.0.")
     return(invisible(NULL))
   }
   dots <- list(...)
@@ -112,4 +112,42 @@ comprehensive_cite <- function(input, encoding = "UTF-8", ..., citeall = TRUE) {
   out <- paste0(unlist(out), collapse = "[")
   out <- gsub("\\s{0,1}\\[XXXXXDELETEMEXXXXX\\]", "", out) # The \\s might cause trouble
   substr(out, 1, nchar(out)-6)
+}
+
+
+# Extract citations
+#
+# This function extracts all citations from a character vector.
+# @param txt Character vector, defaults to
+# \code{readLines("manuscript/manuscript.Rmd")}.
+# @param split Character vector to use for splitting, passed to
+# \code{\link{strsplit}}.
+# @param ... Additional arguments are passed to \code{\link{strsplit}}.
+#@export
+# @return Character vector.
+# @examples
+# extract_citations("This is just an example [@extract_cites; @works].")
+
+extract_citations <- function(x = readLines("manuscript/manuscript.Rmd"),
+                              split = "@+", ...){
+
+  cl <- match.call()
+  cl[[1L]] <- quote(strsplit)
+  cl[["x"]] <- gsub("\\w@", "", paste0(x, collapse = ""))
+  cl[["split"]] <- split
+  cites <- eval(cl, envir = environment())[[1]][-1]
+  cites <- gsub("^([a-zA-Z0-9-]+?)\\b.*$", "\\1", cites)
+  tabcit <- as.data.frame.table(table(cites))
+  tabcit[order(tabcit$Freq, decreasing = T), ]
+}
+
+string_citations <- function(x = readLines("manuscript/manuscript.Rmd"),
+                              split = "@+", ...){
+
+  cl <- match.call()
+  cl[[1L]] <- quote(strsplit)
+  cl[["x"]] <- gsub("\\w@", "", paste0(x, collapse = ""))
+  cl[["split"]] <- split
+  cites <- eval(cl, envir = environment())[[1]][-1]
+  gsub("^([a-zA-Z0-9-]+?)\\b.*$", "\\1", cites)
 }
