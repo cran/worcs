@@ -20,16 +20,20 @@ check_worcs_installation <- function(what = "all") {
     return(invisible(TRUE))
   pass <- list()
   errors <- list()
-  checkfuns <- ls(asNamespace("worcs"))
-  checkfuns <- checkfuns[startsWith(checkfuns, "check_")]
-  checkfuns <- setdiff(checkfuns, c("check_recursive", "check_sum", "check_worcs", "check_worcs_installation"))
+  checkfuns <- c("check_dependencies", "check_git", "check_github", "check_renv", "check_rmarkdown", "check_tinytext")
+
+  # checkfuns <- ls(asNamespace("worcs"))
+  # checkfuns <- checkfuns[startsWith(checkfuns, "check_")]
+  # checkfuns <- setdiff(checkfuns, c("check_recursive", "check_sum", "check_worcs", "check_worcs_installation"))
   if(!what == "all"){
     checkfuns <- checkfuns[checkfuns %in% paste0("check_", what)]
     if(isFALSE(length(checkfuns) > 0)){
       stop("Argument 'what' does not refer to any valid checks.")
     }
   }
-  out <- lapply(checkfuns, do.call, args = list())
+  out <- lapply(checkfuns, function(thisfun){
+    eval(str2lang(paste0("worcs::", thisfun, "()")))})
+
   worcs_checkres <- list(pass = do.call(c, lapply(out, `[[`, "pass")),
                          errors = do.call(c, lapply(out, `[[`, "errors")))
   class(worcs_checkres) <- c("worcs_check", class(worcs_checkres))
@@ -128,6 +132,10 @@ check_git <- function() {
       }
     }
   }
+  if(isTRUE(all(unlist(pass)))){
+    pass <- list(git = TRUE)
+    errors <- list()
+  }
   unlink(dir_name, recursive = TRUE, force = TRUE)
   out <- list(pass = pass, errors = errors)
   class(out) <- c("worcs_check", class(out))
@@ -135,27 +143,67 @@ check_git <- function() {
 }
 
 #' @rdname check_worcs_installation
+#' @param pat Logical, whether to run tests for the existence and functioning of
+#' a GitHub Personal Access Token (PAT). This is the preferred method of
+#' authentication, so defaults to TRUE.
+#' @param ssh Logical, whether to run tests for the existence and functioning of
+#' an SSH key. This method of authentication is not recommended, so defaults to
+#' FALSE.
 #' @export
-check_github <- function() {
+check_github <- function(pat = TRUE, ssh = FALSE) {
   pass <- list()
   errors <- list()
-  pass[["github_pat"]] <- isFALSE(gh::gh_token() == "")
-  if (!pass[["github_pat"]])
-    errors[["github_pat"]] <-
-    "You do not have a personal access token for GitHub; if you intend to use GitHub, consider creating one following the instructions at https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token. Then, run credentials::set_github_pat('YourPAT') in R."
+  # Check if currently in a git repo with remote
+  repo <- try({gert::git_remote_list()})
+  if(!inherits(repo, "try-error")){
+    if(grepl("^https://", repo$url)) pass[["current git repo has a remote that requires PAT authentication"]] <- TRUE
+    if(grepl("^git@", repo$url)) pass[["current git repo has a remote that requires SSH authentication"]] <- TRUE
+  }
+  if(pat){
+    pass[["github_pat"]] <- isFALSE(gh::gh_token() == "")
+    if (!pass[["github_pat"]])
+      errors[["github_pat"]] <-
+        "You have not set a Personal Access Token (PAT) for GitHub; to fix this, run usethis::create_github_token(), create a PAT and copy it, then run gitcreds::gitcreds_set() and paste the PAT when asked."
 
-  # GitHub SSH
-  temp <- tempfile()
-  system2("ssh",
-          "-T git@github.com",
-          stdout = temp,
-          stderr = temp)
-  output <- readLines(temp)
-  pass[["github_ssh"]] <-
-    isTRUE(any(grepl("success", output, fixed = TRUE)))
-  if (!pass[["github_ssh"]])
-    errors[["github_ssh"]] <-
-    "Could not authenticate GitHub via SSH; if you intend to use GitHub, consult https://happygitwithr.com/rstudio-git-github.html"
+    # github pat grants access
+    if(pass[["github_pat"]]){
+      result <- tryCatch(gh::gh("/user"), error = function(e)e)
+      pass[["github_pat_response"]] <- isTRUE(inherits(result, "gh_response"))
+      if (!pass[["github_pat_response"]]){
+        errors[["github_pat_response"]] <- "The Personal Access Token (PAT) in your Git credential store does not grant access to GitHub. To fix this, run usethis::create_github_token(), create a PAT and copy it, then run gitcreds::gitcreds_set() and paste the PAT when asked."
+        if(inherits(result, "http_error_401")){
+          errors[["github_pat_response"]] <- "The Personal Access Token (PAT) in your Git credential store does not grant access to GitHub. It may have expired. To fix this, run usethis::create_github_token(), create a PAT and copy it, then run gitcreds::gitcreds_set() and paste the PAT when asked."
+        }
+        if(inherits(result, "rlib_error") && grepl("one of these forms", result$message)){
+          errors[["github_pat_response"]] <- "To fix this, run usethis::create_github_token(), create a PAT and copy it, then run gitcreds::gitcreds_set() and paste the PAT when asked. It has the wrong format."
+        }
+      }
+    }
+  }
+  if(ssh){
+    # Check SSH
+    sshres <- check_ssh()
+    pass <- c(pass, sshres$pass)
+    errors <- c(errors, sshres$errors)
+    # GitHub SSH
+    temp <- tempfile()
+    system2("ssh",
+            "-T git@github.com",
+            stdout = temp,
+            stderr = temp)
+    output <- readLines(temp)
+    pass[["github_ssh"]] <-
+      isTRUE(any(grepl("success", output, fixed = TRUE)))
+    # Maybe check if *any* type of authentication is possible
+    if (!pass[["github_ssh"]])
+      errors[["github_ssh"]] <-
+      "Could not authenticate GitHub via SSH, but that's OK. We recommend using a Personal Access Token (PAT). If you intend to use SSH with GitHub, consult https://happygitwithr.com/rstudio-git-github.html"
+  }
+
+  if(isTRUE(all(unlist(pass)))){
+    pass <- list(github = TRUE)
+    errors <- list()
+  }
   out <- list(pass = pass, errors = errors)
   class(out) <- c("worcs_check", class(out))
   return(out)
@@ -175,7 +223,7 @@ check_ssh <- function() {
 
   if (!pass[["ssh"]])
     errors[["ssh"]] <-
-    "Could not find a valid SSH key; please consult https://happygitwithr.com/ssh-keys.html"
+    "Could not find a valid SSH key, but that's OK. We recommend using a Personal Access Token (PAT). If you do wish to set up SSH, please consult https://happygitwithr.com/ssh-keys.html"
   out <- list(pass = pass, errors = errors)
   class(out) <- c("worcs_check", class(out))
   return(out)
@@ -264,6 +312,10 @@ check_rmarkdown <- function() {
   if (!pass[["rmarkdown_pdf"]])
     errors[["rmarkdown_pdf"]] <-
     "Rmarkdown could not render a PDF file."
+  if(isTRUE(all(unlist(pass)))){
+    pass <- list(rmarkdown = TRUE)
+    errors <- list()
+  }
   out <- list(pass = pass, errors = errors)
   class(out) <- c("worcs_check", class(out))
   return(out)
