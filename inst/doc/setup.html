@@ -29,13 +29,13 @@ document.addEventListener('DOMContentLoaded', function(e) {
 </script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 
@@ -250,8 +250,9 @@ once for every computer you intend to use <code>R</code> and
 already installed on your system, you can skip those related steps.</p>
 <p>Follow these steps in order:</p>
 <ol style="list-style-type: decimal">
-<li>Install R from <a href="https://CRAN.R-project.org" class="uri">https://CRAN.R-project.org</a></li>
-<li>Install ‘RStudio’ Desktop (Free) from <a href="https://www.rstudio.com/products/rstudio/download/">rstudio.com</a></li>
+<li>Install <a href="https://CRAN.R-project.org">R (free)</a></li>
+<li>Install <a href="https://posit.co/download/rstudio-desktop/">‘RStudio’ Desktop
+(Free)</a></li>
 <li>Install Git from <a href="https://git-scm.com/downloads">git-scm.com</a>. Use the default,
 recommended settings. It is especially important to leave these settings
 selected:
@@ -274,6 +275,27 @@ vignette</a> on how to use ‘GitLab’ or ‘Bitbucket’)
 <em>Sign up</em>. Choose an “Individual”, “Free” plan.
 <!-- + Request a [free academic upgrade](https://help.github.com/en/articles/applying-for-an-educator-or-researcher-discount). This allows you to create *private repositories*, which are only visible to you and selected collaborators, and can be made public when your work is published. --></li>
 </ul></li>
+<li>Install all packages required for WORCS by running the code block
+below this writing in the ‘RStudio’ console. Be prepared for three
+contingencies:
+<ul>
+<li>If you receive any error saying <em>There is no package called
+[package name]</em>, then run the code
+<code>install.packages(&quot;package name&quot;)</code><br />
+</li>
+<li>If you are prompted to update packages, just press [ENTER] to avoid
+updating packages. Updating packages this way in an interactive session
+sometimes leads to errors if the packages are loaded.<br />
+</li>
+<li>If you see a pop-up dialog asking <em>Do you want to install from
+sources the package which needs compilation?</em>, click
+<em>No</em>.</li>
+</ul></li>
+</ol>
+<pre><code>install.packages(&quot;worcs&quot;, dependencies = TRUE)
+tinytex::install_tinytex()
+renv::consent(provided = TRUE)</code></pre>
+<ol start="6" style="list-style-type: decimal">
 <li>Connect ‘RStudio’ to Git and GitHub (for more support, see <a href="https://happygitwithr.com/">Happy Git with R</a>
 <ol style="list-style-type: lower-alpha">
 <li>Open ‘RStudio’, open the Tools menu, click <em>Global Options</em>,
@@ -299,30 +321,22 @@ to view it again!)</li>
 <li>Run <code>gitcreds::gitcreds_set()</code>. This should open a dialog
 in the R console that allows you to paste the PAT from your
 clipboard.</li>
-</ol></li>
-<li>Install all packages required for WORCS by running the following
-code in the ‘RStudio’ console. Be prepared for three contingencies:
-<ul>
-<li>If you receive any error saying <em>There is no package called
-[package name]</em>, then run the code
-<code>install.packages(&quot;package name&quot;)</code><br />
-</li>
-<li>If you are prompted to update packages, just press [ENTER] to avoid
-updating packages. Updating packages this way in an interactive session
-sometimes leads to errors if the packages are loaded.<br />
-</li>
-<li>If you see a pop-up dialog asking <em>Do you want to install from
-sources the package which needs compilation?</em>, click
-<em>No</em>.</li>
-</ul></li>
-</ol>
-<pre><code>install.packages(&quot;worcs&quot;, dependencies = TRUE)
-tinytex::install_tinytex()
-renv::consent(provided = TRUE)</code></pre>
-<p>If you do not have a Git user set up on your computer yet (e.g., if
+<li>If you do not have a Git user set up on your computer yet (e.g., if
 this is the first time you will be using Git), run the following -
-making sure to substitute your actual username and email:</p>
+making sure to substitute your actual username and email:</li>
+</ol></li>
+</ol>
 <pre><code>worcs::git_user(&quot;your_name&quot;, &quot;your_email&quot;, overwrite = TRUE)</code></pre>
+<ol start="7" style="list-style-type: decimal">
+<li>Everything should be installed and connected now. You can verify
+your installation using an automated test suite. The results will be
+printed to the console; if any tests fail, you will see a hint for how
+to resolve it. Run the code below this writing in the ‘RStudio’
+console:</li>
+</ol>
+<pre><code>worcs::check_worcs_installation()</code></pre>
+<div id="optional-step" class="section level3">
+<h3>Optional step</h3>
 <p>If you intend to write documents in APA style, you should
 additionally install the <code>papaja</code> package. Because
 <code>papaja</code> has many dependencies, it is recommended to skip
@@ -331,12 +345,7 @@ APA. Unfortunately, this package is not yet available on the central R
 repository CRAN, but you can install it from ‘GitHub’ using the
 following code:</p>
 <pre><code>install.packages(&quot;papaja&quot;, dependencies = TRUE, update = &quot;never&quot;)</code></pre>
-<p>Everything should be installed and connected now. You can verify your
-installation using the convenience function
-<code>worcs::check_worcs_installation()</code>. It will run a test suite
-and print the results; in case any tests fail, it will provide a hint
-for how to resolve it:</p>
-<pre><code>worcs::check_worcs_installation()</code></pre>
+</div>
 
 
 

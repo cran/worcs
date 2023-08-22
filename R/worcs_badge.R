@@ -113,7 +113,7 @@ check_worcs <- function(path = ".", verbose = TRUE){
 
     # See what files are tracked by git
     tracked <- tryCatch({
-      git_ls(path)
+      git_ls(repo = path)
     }, error = function(e){NULL})
     # If git tracks any files
     checks$pass[checks$name == "git_repo"] <- length(tracked) > 0
@@ -142,7 +142,8 @@ check_worcs <- function(path = ".", verbose = TRUE){
     if(checks$pass[checks$name == "data"]){
       checks$pass[checks$name == "data_checksums"] <-
         tryCatch({
-          cs_now <- sapply(worcs_data, digest, file = TRUE)
+          #cs_now <- sapply(worcs_data, digest, file = TRUE)
+          cs_now <- sapply(worcs_data, cs_fun, worcsfile = file.path(path, ".worcs"))
           names(cs_now) <- worcs_data
           cs_stored <- unlist(worcsfile$checksums)
           if(all(names(cs_now) %in% names(cs_stored))){

@@ -12,7 +12,7 @@ test_that("save and load", {
   open_data(iris[1:5, ], filename = "iris.csv", codebook = "codebook_iris.Rmd", value_labels = 'value_labels_iris.yml')
   checksums <- read_yaml(".worcs")
 
-  expect_equivalent(checksums$checksums$iris.csv, digest("iris.csv", file = TRUE))
+  expect_equivalent(checksums$checksums$iris.csv, worcs:::cs_fun("iris.csv", worcsfile = file.path(tempdir(), the_test, ".worcs")))
 
   # test_that("loading open data works", {
   expect_error({load_data()}, NA)
@@ -42,7 +42,7 @@ test_that("save and load", {
 
   # test_that(".worcs contains checksum for synthetic_data.csv", {
   expect_true(!is.null(checksums$checksums[["synthetic_iris.csv"]]))
-  expect_equivalent(checksums$checksums$synthetic_iris.csv, digest("synthetic_iris.csv", file = TRUE))
+  expect_equivalent(checksums$checksums$synthetic_iris.csv, worcs:::cs_fun("synthetic_iris.csv", worcsfile = file.path(tempdir(), the_test, ".worcs")))
 
   # test_that("loading open data works", {
   expect_error({suppressWarnings(load_data())}, NA)
@@ -76,7 +76,7 @@ test_that("save and load", {
   #cat(ls())
   #rm("iris")
   # test_that("loading open data succeeds when loading from a subdirectory", {
-  skip_if_not(Sys.info()["user"] %in% c("Lissa102", "Studio"))
+
   dir.create("manuscript")
   expect_error({suppressWarnings(load_data("manuscript"))}, NA)
 

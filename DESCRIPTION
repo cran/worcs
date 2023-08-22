@@ -1,7 +1,7 @@
 Package: worcs
 Type: Package
 Title: Workflow for Open Reproducible Code in Science
-Version: 0.1.10
+Version: 0.1.11
 Authors@R: c(
     person(
       given = c("Caspar", "J."),
@@ -36,18 +36,20 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/cjvanlissa/worcs
-RoxygenNote: 7.2.1
-Imports: methods, rmarkdown, renv, prereg, gert, ranger, yaml, digest,
-        rticles, tinytex, credentials, usethis, gh
-Suggests: papaja, remotes, knitr, missRanger, testthat (>= 2.1.0)
+RoxygenNote: 7.2.3
+Imports: methods, rmarkdown, renv, prereg (>= 0.6.0), gert, ranger,
+        yaml, digest, rticles (>= 0.25), tinytex, credentials, usethis,
+        gh
+Suggests: papaja (>= 0.1.1), remotes, knitr, missRanger, testthat (>=
+        2.1.0)
 SystemRequirements: pandoc (>= 1.14) - http://pandoc.org
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2022-07-20 10:45:11 UTC; Lissa102
+Packaged: 2023-08-22 18:13:50 UTC; vanlissa
 Author: Caspar J. Van Lissa [aut, cre]
     (<https://orcid.org/0000-0002-0808-5024>),
   Aaron Peikert [aut] (<https://orcid.org/0000-0001-7813-818X>),
   Andreas M. Brandmaier [aut] (<https://orcid.org/0000-0001-8765-6982>)
 Maintainer: Caspar J. Van Lissa <c.j.vanlissa@tilburguniversity.edu>
 Repository: CRAN
-Date/Publication: 2022-07-20 14:20:02 UTC
+Date/Publication: 2023-08-22 18:30:02 UTC

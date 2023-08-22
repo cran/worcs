@@ -12,7 +12,7 @@
 
 
 
-<title>Setting up your computer for WORCS - Docker-edition</title>
+<title>Using Endpoints to Check Reproducibility</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -336,37 +336,87 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Setting up your computer for WORCS -
-Docker-edition</h1>
+<h1 class="title toc-ignore">Using Endpoints to Check
+Reproducibility</h1>
 
 
 
-<p>If you do not want to install R, RStudio, Latex and Git on a personal
-computer (as described in <a href="https://cjvanlissa.github.io/worcs/articles/setup.html"><code>vignette(&quot;setup&quot;, package = &quot;worcs&quot;)</code></a>),
-but would like to use Docker instead, follow these steps in order:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(worcs)</span></code></pre></div>
+<p>This vignette describe the <code>worcs</code> package’s functionality
+for automating reproducibility. The basic idea is that the entry point,
+endpoint (or endpoints), and recipe by which to get to the endpoint from
+the entry point are all well-defined.</p>
+<p>In a typical <code>worcs</code> project, the entry point will be a
+dynamic document (e.g., <code>manuscript.Rmd</code>), and the endpoint
+will be the rendered manuscript (e.g., <code>manuscript.pdf</code>). The
+recipe by which to get from the entry point to the endpoint is a simple
+call to <code>rmarkdown::render(&quot;manuscript.Rmd&quot;)</code>.</p>
+<p>By default, the entry point is documented in the <code>.worcs</code>
+project file when the project is created.</p>
+<div id="adding-endpoints" class="section level2">
+<h2>Adding endpoints</h2>
+<p>Users can add endpoints using the function
+<code>add_endpoint(&quot;filename&quot;)</code>. When running this function,
+<code>filename</code> is added to the <code>.worcs</code> project file,
+and its checksum is computed so that any changes to the contents of the
+file can be detected.</p>
+<p>It is also possible to specify multiple endpoints. For example, maybe
+the user has finalized the analyses, and wants to track reproducibility
+for the analysis results - but still wants to make changes to the text
+of the manuscript without breaking reproducibility checks. In this case,
+it is useful to track files that contain analysis results instead of the
+rendered manuscript. Imagine these are intermediary files with analysis
+results:</p>
+<ul>
+<li><code>descriptives.csv</code>: A file with the descriptive
+statistics of study variables</li>
+<li><code>model_fit.csv</code>: A table with model fit indices for
+several models</li>
+<li><code>finalmodel.RData</code>: An RData file with the results of the
+final model</li>
+</ul>
+<p>These three files could be tracked as endpoints by calling
+<code>add_endpoint(&quot;descriptives.csv&quot;); add_endpoint(&quot;model_fit.csv&quot;); add_endpoint(&quot;finalmodel.RData&quot;)</code>.</p>
+</div>
+<div id="checking-reproducibility" class="section level2">
+<h2>Checking reproducibility</h2>
+<p>Users can verify that the endpoint remains unchanged by calling the
+function <code>check_endpoints()</code>. If any endpoint has changed
+relative to the version stored in the <code>.worcs</code> project file,
+this will result in a warning message.</p>
+</div>
+<div id="updating-endpoints" class="section level2">
+<h2>Updating endpoints</h2>
+<p>To update the endpoints in the <code>.worcs</code> file, call
+<code>snapshot_endpoints()</code>. Always call this function to log
+changes to the code that should result in a different end result.</p>
+</div>
+<div id="automating-endpoint-checks" class="section level2">
+<h2>Automating endpoint checks</h2>
+<p>If a project is connected to a remote repository on GitHub, it is
+possible to use GitHub actions to automatically check a project’s
+reproducibility and signal the result of this reproducibility check by
+displaying a badge on the project’s readme page (which is the welcome
+page visitors of the GitHub repository first see).</p>
+<p>To do so, follow these steps:</p>
 <ol style="list-style-type: decimal">
-<li>Install <a href="https://docs.docker.com/get-docker/">Docker</a></li>
-<li>Open a terminal/cmd/shell.</li>
-<li>Start the <code>worcs</code> image:</li>
+<li>Add endpoint using add_endpoint(); for example, if the endpoint of
+your analyses is a file called <code>&#39;manuscript/manuscript.md&#39;</code>,
+then you would call
+<code>add_endpoint(&#39;manuscript/manuscript.md&#39;)</code></li>
+<li>Run <code>github_action_check_endpoints()</code></li>
+<li>You should see a message asking you to copy-paste code for a status
+badge to your <code>readme.md</code>. If you do not see this message,
+add the following code to your readme.md manually:
+<ul>
+<li><code>[![worcs_endpoints](https://github.com/YOUR_ACCOUNT/PROJECT_REPOSITORY/actions/workflows/worcs_endpoints.yaml/badge.svg)](https://github.com/YOUR_ACCOUNT/PROJECT_REPOSITORY/actions/workflows/worcs_endpoints.yaml)</code></li>
+</ul></li>
+<li>Commit these changes to GitHub using <code>git_update()</code></li>
 </ol>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-e</span> PASSWORD=secret <span class="at">-p</span> 8787:8787 <span class="at">-it</span> cjvanlissa/worcs:latest</span></code></pre></div>
-<ol start="3" style="list-style-type: decimal">
-<li>Open the address <code>127.0.0.1:8787/</code> in a browser. Login
-using username=rstudio and password=secret.</li>
-</ol>
-<p>Then setup the container.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>renv<span class="sc">::</span><span class="fu">consent</span>(<span class="at">provided =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">git_user</span>(<span class="st">&quot;your_name&quot;</span>, <span class="st">&quot;your_email&quot;</span>)</span></code></pre></div>
-<p>To terminate the container, press Ctrl + C in the terminal. To save
-files from a Docker session on your disk, you have to link a directory
-explicitly when starting the container.</p>
-<p>On Unix file systems, this is done as follows:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">-v</span> /path/on/your/pc:/home/rstudio</span></code></pre></div>
-<p>And on Windows file systems, as follows:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">-v</span> //c/path/on/your/windows/pc:/home/rstudio</span></code></pre></div>
-<p>Then start the Docker session using this command:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-e</span> PASSWORD=secret <span class="at">-p</span> 8787:8787 <span class="at">-v</span> /path/on/your/pc:/home/rstudio <span class="at">-it</span> cjvanlissa/worcs:latest</span></code></pre></div>
-<p>That’s it!</p>
+<p>Visit your project page on GitHub and select the <code>Actions</code>
+tab to see that your reproducibility check is running; visit the main
+project page to see the new badge in your readme.md file.</p>
+</div>
 
 
 
