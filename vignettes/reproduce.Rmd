@@ -42,15 +42,26 @@ renv::consent(provided = TRUE)
 
 ## Obtaining the project repository
 
+<!-- To do so, open RStudio and, in the console,  -->
+<!-- If you are familiar with 'Git' and 'GitHub', you can "clone" the project as usual. -->
+
 WORCS projects are typically hosted on 'GitHub', or another 'Git' remote repository.
-If you are familiar with 'Git' and 'GitHub', you can "clone" the project as usual.
 
-If you are not familiar with these tools, you can download the project repository from the remote repository through the web interface.
+The recommended way to obtain a local copy of the project repository is to "clone" it.
 
-On 'GitHub', this is done by clicking the green button labeled "Code". Clicking it reveals the option "Download ZIP" (see below), which allows you to download a compressed archive of the project.
-This can be unpacked using ZIP tools, which are integrated in most operating systems.
+On 'GitHub', this is done by clicking the green button labeled "Code". Clicking it reveals the HTTPS link to the project repository (see below).
+Copy this link to the clipboard by clicking the clipboard icon next to it.
 
 ![](github_download.png)
+
+Next, open an RStudio instance and run the following code in the console, replacing `https://github.com/username/reponame.git` with the HTTPS address you just copied to clipboard, and replacing the `c:/where/you/want/the/repo` with the location on your hard drive where you want to clone the repository:
+
+```
+gert::git_clone("https://github.com/username/reponame.git", path = "c:/where/you/want/the/repo")
+```
+
+
+**Note: While it is also possible to download a compressed (ZIP) archive containing the project (see the image above), this has an important limitation: a repository downloaded via the GitHub interface is, itself, not a Git repository! This is a peculiarity of the GitHub interface. This might result in unexpected behavior when using any WORCS functionality that relies on Git for version control. Thus, as a general rule, we advise cloning projects instead.**
 
 ## Open the project in 'RStudio'
 
@@ -80,8 +91,9 @@ load_entrypoint()
 
 ## Reproduce the analyses
 
-If the entry point has the extention '.Rmd', press the button labelled 'Knit' in the editor to compile it and run the analyses contained therein. If the entry point has the extention '.R', press the 'Run' button instead.
-The resulting document should reproduce the original work.
+From `worcs` version 0.1.12, projects can be reproduced using the function `reproduce()`.
+This function will evaluate the reproducibility recipe stored in the `.worcs` project file,
+and checks whether the resulting endpoints have the correct checksums (i.e., are unchanged relative to the authors' original work).
 
 ## No access to original data
 
@@ -90,7 +102,7 @@ In this case, the project ought to contain a synthetic data file with similar pr
 to the original data.
 This synthetic data allows you to verify that the analyses can be run,
 and that the code is correct.
-The results will likely deviate (substantially) from the original findings.
+The results will, however, deviate from the original findings and should not be substantively interpreted.
 
 Authors may use the function `notify_synthetic()` to generate a message in the paper when a synthetic dataset is used.
 Authors should also provide information in the README.md file on how to obtain access to the original data in case an audit is warranted.

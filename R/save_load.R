@@ -117,6 +117,12 @@ save_data <- function(data,
                       save_expression = write.csv(x = data, file = filename, row.names = FALSE),
                       load_expression = read.csv(file = filename, stringsAsFactors = TRUE),
                       ...){
+  # Check data names
+  namz <- names(data)
+  if(any(duplicated(namz))){
+    col_message(paste0("Object 'data' contains duplicated names, which were replaced: ", paste0(namz[duplicated(namz)], collapse = ", ")), success = FALSE)
+    names(data) <- make.unique(namz)
+  }
   # Find .worcs file
   dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory), ".worcs")))
 
@@ -424,7 +430,11 @@ check_metadata <- function(x, codebook, value_labels){
   }
 
   for(v in names(x)){
-    if(!class(x[[v]])[1] == classes[v]){
+    if(!v %in% names(classes)){
+      col_message("Could not restore class of variable '", v, "'.", success = FALSE)
+      next
+    }
+    if(!inherits(x[[v]], classes[v])){
       x[[v]] <- switch(classes[v],
                        ordered = {
                          tryCatch({
@@ -453,16 +463,11 @@ cs_fun <- function(filename, worcsfile = ".worcs"){
   dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcsfile))))
   fn_rel <- path_rel_worcs(filename, dn_worcs)
   tryCatch({
-    git_record <- tryCatch(system2("git", paste0('-C "', dirname(worcsfile), '" ls-files --eol'), stdout = TRUE), error = function(e){ stop() }, warning = function(w){
-      message("This worcs project is not version controlled with Git.")
-      stop()
-    })
-    git_record <- git_record[grepl(fn_rel, git_record, fixed = TRUE)]
-    git_record <- strsplit(git_record[1], split = "\\s+")[[1]][c(1:2)]
-    if(isTRUE(any(grepl("/-text", git_record, fixed = TRUE) | grepl("/lf", git_record, fixed = TRUE) | grepl("/cr", git_record, fixed = TRUE)))){
+    if(is_binary(fn_rel)){
+      digest::digest(filename, file = TRUE)
+    } else {
       stop()
     }
-    digest::digest(filename, file = TRUE)
   }, error = function(e){
     suppressWarnings(digest::digest(paste0(readLines(filename), collapse = ""), serialize = FALSE, file = FALSE))
   })
@@ -506,13 +511,17 @@ load_checksum <- function(filename){
 }
 
 #' @importFrom digest digest
-check_sum <- function(filename, old_cs = NULL, worcsfile = ".worcs"){
+check_sum <- function(filename, old_cs = NULL, worcsfile = ".worcs", error = FALSE){
   cs <- cs_fun(filename, worcsfile = worcsfile)
   if(is.null(old_cs)){
     old_cs <- load_checksum(filename = filename)
   }
   if(!cs == old_cs){
-    stop("Checksum for file '", filename, "' did not match the checksum on record (in '.worcs'). This means that the file has changed since the checksum was stored.")
+    if(error){
+      stop("Checksum for file '", filename, "' did not match the checksum on record (in '.worcs'). This means that the file has changed since the checksum was stored.")
+    } else {
+      col_message("Checksum for file '", filename, "' did not match the checksum on record (in '.worcs'). This means that the file has changed since the checksum was stored.", success = FALSE)
+    }
   }
 }
 
@@ -671,4 +680,9 @@ path_rel_worcs <- function(fn, dn_worcs = NULL, worcs_directory = "."){
     stop("File path must be inside of the worcs project file.", call. = FALSE)
   }
   return(do.call(file.path, as.list(fn[-seq_along(dn_worcs)])))
+}
+
+is_binary <- function(x){
+  out <- tryCatch(system2("file", args = paste0("--mime '", x, "'"), stdout = TRUE), error = function(e){ stop() })
+  return(isFALSE(grepl(": text/", out, fixed = TRUE)))
 }
