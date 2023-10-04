@@ -1,7 +1,7 @@
 Package: worcs
 Type: Package
 Title: Workflow for Open Reproducible Code in Science
-Version: 0.1.12
+Version: 0.1.13
 Authors@R: c(
     person(
       given = c("Caspar", "J."),
@@ -45,11 +45,11 @@ Suggests: papaja (>= 0.1.1), remotes, knitr, missRanger, testthat (>=
 SystemRequirements: pandoc (>= 1.14) - http://pandoc.org
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-09-13 11:19:30 UTC; vanlissa
+Packaged: 2023-09-30 12:52:45 UTC; vanlissa
 Author: Caspar J. Van Lissa [aut, cre]
     (<https://orcid.org/0000-0002-0808-5024>),
   Aaron Peikert [aut] (<https://orcid.org/0000-0001-7813-818X>),
   Andreas M. Brandmaier [aut] (<https://orcid.org/0000-0001-8765-6982>)
 Maintainer: Caspar J. Van Lissa <c.j.vanlissa@tilburguniversity.edu>
 Repository: CRAN
-Date/Publication: 2023-09-13 19:00:02 UTC
+Date/Publication: 2023-10-04 16:20:02 UTC
