@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Using Custom Synthetic Data</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Using Custom Synthetic Data</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(worcs)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(lavaan)</span></code></pre></div>
+<p>Oftentimes, it is not possible to share original research data
+publicly, for example, due to privacy constraints. As explained in the
+<code>worcs</code> paper, in such cases, it is advantageous to share a
+synthetic dataset instead, so that the code can still be vetted,
+debugged, and adapted by others. By default, the function
+<code>closed_data()</code> generates a synthetic dataset using the
+function <code>synthetic()</code>; a rudimentary random forest-based
+algorithm. However, sometimes this default option falls short. In such
+cases, it is possible to fully customize synthetic dataset generation.
+This vignette discusses some of the options.</p>
+<div id="generating-data-from-a-structural-equation-model" class="section level2">
+<h2>Generating Data from a Structural Equation Model</h2>
+<p>Structural equation models may have problems converging when
+estimated on synthetic datasets. To avoid this problem, synthetic data
+can be generated directly from the SEM model. Generating data from an
+SEM model will often result in a synthetic dataset that will closely
+reproduce the model parameters estimated on the original dataset.</p>
+<div id="illustrating-the-problem" class="section level3">
+<h3>Illustrating the Problem</h3>
+<p>For this example, we will use the <code>PoliticalDemocracy</code>
+data included with the <code>lavaan</code> package. Imagine that we
+collected these data, and are not allowed to share them. In an existing
+<code>worcs</code> project, we could then store them using the
+command:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(lavaan)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(tidySEM)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">4</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>dat <span class="ot">&lt;-</span> PoliticalDemocracy</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="fu">closed_data</span>(dat)</span></code></pre></div>
+<p>Now, we estimate our SEM-model, based on the example in the
+<code>lavaan</code> documentation:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">load_data</span>()</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="st">&#39;</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="st">ind60 =~ x1 + x2 + x3</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="st">dem60 =~ y1 + a*y2 + b*y3 + c*y4</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="st">dem65 =~ y5 + a*y6 + b*y7 + c*y8</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="st"># regressions</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="st">dem60 ~ ind60</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="st">dem65 ~ ind60 + dem60</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="st"># residual correlations</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="st">y1 ~~ y5</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="st">y2 ~~ y4 + y6</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="st">y3 ~~ y7</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="st">y4 ~~ y8</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="st">y6 ~~ y8&#39;</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>fit <span class="ot">&lt;-</span> lavaan<span class="sc">::</span><span class="fu">sem</span>(model, <span class="at">data =</span> dat)</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>tidySEM<span class="sc">::</span><span class="fu">table_results</span>(fit)</span></code></pre></div>
+<pre><code>#&gt;              label est_sig   se pval       confint
+#&gt; 1      ind60.BY.x1    1.00 0.00 &lt;NA&gt;  [1.00, 1.00]
+#&gt; 2      ind60.BY.x2 2.18*** 0.14 0.00  [1.91, 2.45]
+#&gt; 3      ind60.BY.x3 1.82*** 0.15 0.00  [1.52, 2.12]
+#&gt; 4      dem60.BY.y1    1.00 0.00 &lt;NA&gt;  [1.00, 1.00]
+#&gt; 5      dem60.BY.y2 1.19*** 0.14 0.00  [0.92, 1.46]
+#&gt; 6      dem60.BY.y3 1.17*** 0.12 0.00  [0.94, 1.41]
+#&gt; 7      dem60.BY.y4 1.25*** 0.12 0.00  [1.02, 1.48]
+#&gt; 8      dem65.BY.y5    1.00 0.00 &lt;NA&gt;  [1.00, 1.00]
+#&gt; 9      dem65.BY.y6 1.19*** 0.14 0.00  [0.92, 1.46]
+#&gt; 10     dem65.BY.y7 1.17*** 0.12 0.00  [0.94, 1.41]
+#&gt; 11     dem65.BY.y8 1.25*** 0.12 0.00  [1.02, 1.48]
+#&gt; 12  dem60.ON.ind60 1.47*** 0.39 0.00  [0.70, 2.24]
+#&gt; 13  dem65.ON.ind60  0.60** 0.23 0.01  [0.16, 1.04]
+#&gt; 14  dem65.ON.dem60 0.87*** 0.07 0.00  [0.72, 1.01]
+#&gt; 15      y1.WITH.y5    0.58 0.36 0.10 [-0.11, 1.28]
+#&gt; 16      y2.WITH.y4   1.44* 0.69 0.04  [0.09, 2.79]
+#&gt; 17      y2.WITH.y6  2.18** 0.74 0.00  [0.74, 3.63]
+#&gt; 18      y3.WITH.y7    0.71 0.61 0.24 [-0.49, 1.91]
+#&gt; 19      y4.WITH.y8    0.36 0.44 0.41 [-0.51, 1.23]
+#&gt; 20      y6.WITH.y8   1.37* 0.58 0.02  [0.24, 2.50]
+#&gt; 21    Variances.x1 0.08*** 0.02 0.00  [0.04, 0.12]
+#&gt; 22    Variances.x2    0.12 0.07 0.08 [-0.02, 0.26]
+#&gt; 23    Variances.x3 0.47*** 0.09 0.00  [0.29, 0.64]
+#&gt; 24    Variances.y1 1.85*** 0.43 0.00  [1.01, 2.70]
+#&gt; 25    Variances.y2 7.58*** 1.37 0.00 [4.90, 10.26]
+#&gt; 26    Variances.y3 4.96*** 0.96 0.00  [3.08, 6.83]
+#&gt; 27    Variances.y4 3.22*** 0.72 0.00  [1.81, 4.64]
+#&gt; 28    Variances.y5 2.31*** 0.48 0.00  [1.37, 3.25]
+#&gt; 29    Variances.y6 4.97*** 0.92 0.00  [3.16, 6.77]
+#&gt; 30    Variances.y7 3.56*** 0.71 0.00  [2.17, 4.95]
+#&gt; 31    Variances.y8 3.31*** 0.70 0.00  [1.93, 4.69]
+#&gt; 32 Variances.ind60 0.45*** 0.09 0.00  [0.28, 0.62]
+#&gt; 33 Variances.dem60 3.88*** 0.87 0.00  [2.18, 5.57]
+#&gt; 34 Variances.dem65    0.16 0.23 0.47 [-0.28, 0.61]</code></pre>
+<p>This should work fine. But what if someone tries to reproduce our
+analysis? They would not have access to the original data, only the
+synthetic dataset. To simulate their experience reproducing the
+analysis, we can load the synthetic dataset and try to run our
+model:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>dat2 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;synthetic_dat.csv&quot;</span>, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>fit2 <span class="ot">&lt;-</span> lavaan<span class="sc">::</span><span class="fu">sem</span>(model, <span class="at">data =</span> dat2)</span></code></pre></div>
+<pre><code>#&gt; Warning: lavaan-&gt;lav_object_post_check():  
+#&gt;    some estimated lv variances are negative
+#&gt; Warning: lavaan-&gt;lav_object_post_check():  
+#&gt;    the covariance matrix of the residuals of the observed variables (theta) 
+#&gt;    is not positive definite ; use lavInspect(fit, &quot;theta&quot;) to investigate.</code></pre>
+<p>This should result in several warnings, about negative latent
+variable variances (an impossibility) and a warning that the observed
+covariance matrix of the residuals is not positive definite. In other
+words: the model cannot be fit to the synthetic data, because the
+structure in the data is not adequately reproduced by the default
+algorithm of <code>synthetic()</code>.</p>
+</div>
+<div id="adding-a-custom-dataset" class="section level3">
+<h3>Adding a Custom Dataset</h3>
+<p>A dataset generated <em>from the model</em> will be much better able
+to reproduce that model. So, let’s use this SEM model to generate a
+synthetic dataset:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">33</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>dat_synthetic <span class="ot">&lt;-</span> lavaan<span class="sc">::</span><span class="fu">simulateData</span>(<span class="at">model =</span> lavaan<span class="sc">::</span><span class="fu">partable</span>(fit))</span></code></pre></div>
+<p>Note that the function <code>simulateData()</code> accepts a
+parameter table as its argument, which must first be extracted from the
+fitted model object using <code>partable()</code>.</p>
+<p>To add this custom synthetic dataset to our original dataset, use the
+function below. Note that <code>original_name</code> should reference
+the <em>file name</em> of the data the synthetic dataset should be
+associated with, not the name of the R-object. We started with an
+R-object called <code>dat</code>, which we saved to a file called
+<code>dat.csv</code> using the function <code>closed_data()</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">add_synthetic</span>(dat_synthetic, <span class="at">original_name =</span> <span class="st">&quot;dat.csv&quot;</span>)</span></code></pre></div>
+<p>If we now remove the original data, and call <code>load_data()</code>
+again, we can verify that the synthetic dataset is loaded, and we can
+see that it’s possible to reproduce the analysis - if not the exact
+results - with it:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">file.remove</span>(<span class="st">&quot;dat.csv&quot;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">load_data</span>()</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>fit2 <span class="ot">&lt;-</span> lavaan<span class="sc">::</span><span class="fu">sem</span>(model, <span class="at">data =</span> dat)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>tidySEM<span class="sc">::</span><span class="fu">table_results</span>(fit2)</span></code></pre></div>
+<pre><code>#&gt; [1] TRUE
+#&gt;              label est_sig   se pval      confint
+#&gt; 1      ind60.BY.x1    1.00 0.00 &lt;NA&gt; [1.00, 1.00]
+#&gt; 2      ind60.BY.x2 2.15*** 0.05 0.00 [2.05, 2.25]
+#&gt; 3      ind60.BY.x3 1.78*** 0.06 0.00 [1.67, 1.90]
+#&gt; 4      dem60.BY.y1    1.00 0.00 &lt;NA&gt; [1.00, 1.00]
+#&gt; 5      dem60.BY.y2 1.15*** 0.05 0.00 [1.06, 1.25]
+#&gt; 6      dem60.BY.y3 1.13*** 0.04 0.00 [1.04, 1.21]
+#&gt; 7      dem60.BY.y4 1.13*** 0.04 0.00 [1.05, 1.21]
+#&gt; 8      dem65.BY.y5    1.00 0.00 &lt;NA&gt; [1.00, 1.00]
+#&gt; 9      dem65.BY.y6 1.15*** 0.05 0.00 [1.06, 1.25]
+#&gt; 10     dem65.BY.y7 1.13*** 0.04 0.00 [1.04, 1.21]
+#&gt; 11     dem65.BY.y8 1.13*** 0.04 0.00 [1.05, 1.21]
+#&gt; 12  dem60.ON.ind60 1.51*** 0.16 0.00 [1.20, 1.82]
+#&gt; 13  dem65.ON.ind60 0.75*** 0.09 0.00 [0.57, 0.93]
+#&gt; 14  dem65.ON.dem60 0.86*** 0.03 0.00 [0.80, 0.91]
+#&gt; 15      y1.WITH.y5 0.52*** 0.14 0.00 [0.25, 0.79]
+#&gt; 16      y2.WITH.y4 1.79*** 0.26 0.00 [1.27, 2.30]
+#&gt; 17      y2.WITH.y6 1.74*** 0.24 0.00 [1.26, 2.22]
+#&gt; 18      y3.WITH.y7  0.80** 0.24 0.00 [0.32, 1.28]
+#&gt; 19      y4.WITH.y8 0.53*** 0.16 0.00 [0.21, 0.84]
+#&gt; 20      y6.WITH.y8 1.46*** 0.21 0.00 [1.04, 1.88]
+#&gt; 21    Variances.x1 0.07*** 0.01 0.00 [0.06, 0.08]
+#&gt; 22    Variances.x2 0.10*** 0.02 0.00 [0.06, 0.15]
+#&gt; 23    Variances.x3 0.48*** 0.03 0.00 [0.41, 0.55]
+#&gt; 24    Variances.y1 1.83*** 0.18 0.00 [1.48, 2.17]
+#&gt; 25    Variances.y2 6.85*** 0.48 0.00 [5.90, 7.80]
+#&gt; 26    Variances.y3 5.22*** 0.39 0.00 [4.46, 5.98]
+#&gt; 27    Variances.y4 3.33*** 0.27 0.00 [2.80, 3.87]
+#&gt; 28    Variances.y5 1.98*** 0.17 0.00 [1.64, 2.32]
+#&gt; 29    Variances.y6 4.32*** 0.32 0.00 [3.70, 4.94]
+#&gt; 30    Variances.y7 3.62*** 0.28 0.00 [3.07, 4.17]
+#&gt; 31    Variances.y8 3.38*** 0.27 0.00 [2.86, 3.90]
+#&gt; 32 Variances.ind60 0.43*** 0.03 0.00 [0.37, 0.49]
+#&gt; 33 Variances.dem60 4.10*** 0.35 0.00 [3.41, 4.79]
+#&gt; 34 Variances.dem65  0.25** 0.10 0.01 [0.06, 0.44]</code></pre>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
