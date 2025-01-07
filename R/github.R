@@ -19,10 +19,12 @@
 #' unlink(".git", recursive = TRUE)
 #' file.remove(".gitignore")
 #' @export
-git_ignore <- function(..., ignore = TRUE, repo = "."){
+git_ignore <- function(..., ignore = TRUE, repo = ".") {
   ab_path <- normalizePath(repo)
-  if(!dir.exists(file.path(ab_path, ".git"))){
-    stop("No valid Git repository exists at ", normalizePath(file.path(ab_path, ".git")), call. = FALSE)
+  if (!dir.exists(file.path(ab_path, ".git"))) {
+    stop("No valid Git repository exists at ",
+         normalizePath(file.path(ab_path, ".git")),
+         call. = FALSE)
   }
   dots <- unlist(list(...))
   path_gitig <- file.path(ab_path, ".gitignore")
@@ -31,21 +33,24 @@ git_ignore <- function(..., ignore = TRUE, repo = "."){
   cl[["filename"]] <- path_gitig
   cl[c("ignore", "repo")] <- NULL
   cl[["modify"]] <- file.exists(path_gitig)
-  if(!ignore){
+  if (!ignore) {
     ig_these <- names(cl) == "" & sapply(cl, class) == "character"
-    if(any(ig_these)){
-      cl[ig_these] <- lapply(cl[ig_these], function(x){ paste0("!", x) })
+    if (any(ig_these)) {
+      cl[ig_these] <- lapply(cl[ig_these], function(x) {
+        paste0("!", x)
+      })
     }
   }
   eval(cl, parent.frame())
 }
 
 #' @importFrom gert libgit2_config git_config_global
-has_git <- function(){
+has_git <- function() {
   tryCatch({
     config <- libgit2_config()
-    return(has_git_user() & (any(unlist(config[c("ssh", "https")]))))
-  }, error = function(e){
+    return(has_git_user() &
+             (any(unlist(config[c("ssh", "https")]))))
+  }, error = function(e) {
     return(FALSE)
   })
 }
@@ -72,33 +77,36 @@ has_git <- function(){
 #' do.call(git_user, worcs:::get_user())
 #' @export
 #' @importFrom gert git_config_global_set
-git_user <- function(name, email, overwrite = !has_git_user(), verbose = TRUE){
-  if(overwrite){
-    invisible(
-      tryCatch({
-        do.call(git_config_global_set, list(
-          name = "user.name",
-          value = name
-        ))
-        do.call(git_config_global_set, list(
-          name = "user.email",
-          value = email
-        ))
-        col_message("'Git' username set to '", name, "' and email set to '", email, "'.", verbose = verbose)
-      }, error = function(e){col_message("Could not set 'Git' credentials.", success = FALSE)})
-    )
+git_user <- function(name,
+                     email,
+                     overwrite = !has_git_user(),
+                     verbose = TRUE) {
+  if (overwrite) {
+    invisible(tryCatch({
+      do.call(git_config_global_set,
+              list(name = "user.name", value = name))
+      do.call(git_config_global_set,
+              list(name = "user.email", value = email))
+      col_message("'Git' username set to '",
+                  name,
+                  "' and email set to '",
+                  email,
+                  "'.",
+                  verbose = verbose)
+    }, error = function(e) {
+      col_message("Could not set 'Git' credentials.", success = FALSE)
+    }))
   } else {
-    message("To set the 'Git' username and email, call 'git_user()' with the argument 'overwrite = TRUE'.")
+    message(
+      "To set the 'Git' username and email, call 'git_user()' with the argument 'overwrite = TRUE'."
+    )
   }
 }
 
 #' @importFrom gert git_config_global
-get_user <- function(){
-  Args <- list(
-    name = "yourname",
-    email = "yourname@email.com"
-  )
-  if(has_git_user()){
+get_user <- function() {
+  Args <- list(name = "yourname", email = "yourname@email.com")
+  if (has_git_user()) {
     cf <- git_config_global()
     Args$name <- cf$value[cf$name == "user.name"]
     Args$email <- cf$value[cf$name == "user.email"]
@@ -118,16 +126,18 @@ get_user <- function(){
 #' has_git_user()
 #' @export
 #' @importFrom gert git_config_global
-has_git_user <- function(){
+has_git_user <- function() {
   tryCatch({
     cf <- git_config_global()
-    if(!("user.name" %in% cf$name) & ("user.email" %in% cf$name)){
+    if (!("user.name" %in% cf$name) & ("user.email" %in% cf$name)) {
       stop()
     } else {
       return(TRUE)
     }
-  }, error = function(e){
-    message("No 'Git' credentials found, returning name = 'yourname' and email = 'yourname@email.com'.")
+  }, error = function(e) {
+    message(
+      "No 'Git' credentials found, returning name = 'yourname' and email = 'yourname@email.com'."
+    )
     return(FALSE)
   })
 }
@@ -175,69 +185,314 @@ git_update <- function(message = paste0("update ", Sys.time()),
                        ssh_key,
                        mirror,
                        force,
-                       verbose = TRUE){
+                       verbose = TRUE) {
+  cl <- match.call.defaults()
+
   tryCatch({
+    if (!is_quiet())
+      cli::cli_process_start("Identify local 'Git' repository at {.val {repo}}")
     git_ls(repo = repo)
-    col_message("Identified local 'Git' repository.", verbose = verbose)
-  }, error = function(e){
-    col_message("Not a 'Git' repository.", success = FALSE)
-    col_message("Could not add files to staging area of 'Git' repository.", success = FALSE)
-    col_message("Could not commit staged files to 'Git' repository.", success = FALSE)
-    col_message("Could not push local commits to remote repository.", success = FALSE)
-    return()
-    })
+    cli::cli_process_done()
+  }, error = function(err) {
+    cli::cli_process_failed()
+  })
 
-  cl <- as.list(match.call()[-1])
-  for(this_arg in c("message", "files", "repo")){
-    if(is.null(cl[[this_arg]])){
-      cl[[this_arg]] <- formals()[[this_arg]]
-    }
-  }
-  #if(length(cl) > 0){
-  #  Args[sapply(names(cl), function(i) which(i == names(Args)))] <- cl
-  #}
+  cl_add <- cl[c(1L, which(names(cl) %in% c("files", "repo")))]
+  cl_add[[1L]] <- str2lang("gert::git_add")
+  cl_commit <- cl[c(1L, which(names(cl) %in% c(
+    "message", "author", "committer", "repo"
+  )))]
+  cl_commit[[1L]] <- str2lang("gert::git_commit")
+  cl_push <- cl[c(1L, which(
+    names(cl) %in% c(
+      "remote",
+      "refspec",
+      "password",
+      "ssh_key",
+      "mirror",
+      "force",
+      "verbose",
+      "repo"
+    )
+  ))]
+  cl_push[[1L]] <- str2lang("gert::git_push")
 
-  Args_add <- cl[names(cl) %in% c("files", "repo")]
-  Args_commit <- cl[names(cl) %in% c("message", "author", "committer", "repo")]
-  Args_push <- cl[names(cl) %in% c("remote", "refspec", "password", "ssh_key", "mirror", "force", "verbose", "repo")]
-  invisible(
-    tryCatch({
-      do.call(git_add, Args_add)
-      col_message("Added files to staging area of 'Git' repository.", verbose = verbose)
-    }, error = function(e){
-      col_message("Could not add files to staging area of 'Git' repository.", success = FALSE)
-      message(e)
-      })
-  )
-  invisible(
-    tryCatch({
-      do.call(git_commit, Args_commit)
-      col_message("Committed staged files to 'Git' repository.", verbose = verbose)
-    }, error = function(e){
-      col_message("Could not commit staged files to 'Git' repository.", success = FALSE)
-      message(e)
-      })
-  )
-  invisible(
-    tryCatch({
-      do.call(git_push, Args_push)
-      col_message("Pushed local commits to remote repository.", verbose = verbose)
-    }, error = function(e){
-      col_message("Could not push local commits to remote repository.", success = FALSE)
-      message(e)
-      })
-  )
+  invisible(tryCatch({
+    if (!is_quiet())
+      cli::cli_process_start("Adding files to staging area of 'Git' repository.")
+    eval.parent(cl_add)
+    cli::cli_process_done()
+  }, error = function(err) {
+    cli::cli_process_failed()
+  }))
+
+  invisible(tryCatch({
+    if (!is_quiet())
+      cli::cli_process_start("Committed staged files to 'Git' repository.")
+    eval.parent(cl_commit)
+    cli::cli_process_done()
+  }, error = function(err) {
+    cli::cli_process_failed()
+  }))
+
+  tryCatch({
+    if (!is_quiet())
+      cli::cli_process_start("Push local commits to remote repository.")
+    eval.parent(cl_push)
+    cli::cli_process_done()
+  }, error = function(err) {
+    cli::cli_process_failed()
+  })
+  invisible()
 }
 
 
-parse_repo <- function(remote_repo, verbose = TRUE){
-  valid_repo <- grepl("^git@.+?\\..+?:.+?/.+?(\\.git)?$", remote_repo) | grepl("^https://.+?\\..+?/.+?/.+?(\\.git)?$", remote_repo)
-  if(!valid_repo){
-    col_message("Not a valid 'Git' remote repository address: ", remote_repo, success = FALSE, verbose = verbose)
+
+parse_repo <- function(remote_repo, verbose = TRUE) {
+  valid_repo <- grepl("^git@.+?\\..+?:.+?/.+?(\\.git)?$", remote_repo) |
+    grepl("^https://.+?\\..+?/.+?/.+?(\\.git)?$", remote_repo)
+  if (!valid_repo) {
+    col_message(
+      "Not a valid 'Git' remote repository address: ",
+      remote_repo,
+      success = FALSE,
+      verbose = verbose
+    )
     return(NULL)
   }
   repo_url <- gsub("(^.+?@)(.*)$", "\\2", remote_repo)
   repo_url <- gsub("(\\..+?):", "\\1/", repo_url)
   repo_url <- gsub("\\.git$", "", repo_url)
   gsub("^(https://)?", "https://", repo_url)
+}
+
+#' @title Create a New 'GitHub' Repository
+#' @description Given that a 'GitHub' user is configured, with the appropriate
+#' permissions, this function creates a new repository on your account.
+#' @param name Name of the repository to be created.
+#' @param private Whether or not the repository should be private, defaults to
+#' `FALSE`.
+#' @return Invisibly returns a logical value,
+#' indicating whether the function was successful or not.
+#' @examples
+#' git_remote_create()
+#' @rdname git_remote_create
+#' @export
+#' @importFrom cli cli_process_start cli_process_done cli_process_failed
+#' @importFrom gh gh gh_whoami
+git_remote_create <- function(name, private = TRUE) {
+  git_usrnm <- tryCatch(
+    gh::gh_whoami()$login,
+    error = function(e) {
+      "username"
+    }
+  )
+  with_cli_try("Creating GitHub repository '{git_usrnm}/{name}'", {
+    if (git_usrnm == "username")
+      stop()
+    if (private) {
+      invisible(gh::gh("POST /user/repos", name = name, private = "true"))
+    } else {
+      invisible(gh::gh("POST /user/repos", name = name))
+    }
+  })
+}
+
+# These are all used in git_release_publish below:
+#' @importFrom utils getFromNamespace
+target_repo <- utils::getFromNamespace("target_repo", "usethis")
+check_can_push <- utils::getFromNamespace("check_can_push", "usethis")
+get_release_data <- utils::getFromNamespace("get_release_data", "usethis")
+gh_tr <- utils::getFromNamespace("gh_tr", "usethis")
+check_github_has_SHA <- utils::getFromNamespace("check_github_has_SHA", "usethis")
+# To here
+
+#' @title Publish a Release on 'GitHub'
+#' @description Given that a 'GitHub' user is configured, with the appropriate
+#' permissions, this function pushes the current branch (if safe),
+#' then publishes a 'GitHub' Release of the repository indicated by
+#' `repo` to that user's account.
+#' @param repo The path to the 'Git' repository.
+#' @param tag_name Optional character string to specify the tag name. By
+#' default, this is set to `NULL` and `git_release_publish()` uses version
+#' numbers starting with `0.1.0` for both the `tag_name` and `release_name`
+#' arguments. Override this behavior, for example, to increment the major
+#' version number by specifying `0.2.0`.
+#' @param release_name Optional character string to specify the tag name. By
+#' default, this is set to `NULL` and `git_release_publish()` uses version
+#' numbers starting with `0.1.0` for both the `tag_name` and `release_name`
+#' arguments. Override this behavior, for example, to increment the major
+#' version number by specifying `0.2.0`.
+#' @return No return value. This function is called for its side effects.
+#' @examples
+#' \dontrun{
+#' git_release_publish()
+#' }
+#' @rdname git_remote_create
+#' @export
+#' @importFrom cli cli_process_start cli_process_done cli_process_failed
+#' @importFrom gh gh gh_whoami
+#' @importFrom usethis with_project
+git_release_publish <- function(repo = ".",
+                                tag_name = NULL,
+                                release_name = NULL) {
+  tryCatch({
+    cli::cli_process_start("Posting release to GitHub")
+    usethis::with_project(repo, code = {
+      tr <- target_repo(github_get = TRUE,
+                        ok_configs = c("ours", "fork"))
+    }, quiet = TRUE)
+    usethis::with_project(repo, code = {
+      check_can_push(tr = tr, "to create a release")
+    }, quiet = TRUE)
+    usethis::with_project("c:/git_repositories/worcs",
+                          code = {
+                            dat <- get_release_data(tr)
+                          },
+                          quiet = TRUE)
+
+    # Get current commit hash
+    SHA = gert::git_info(repo = repo)$commit
+    gh <- gh_tr(tr)
+    # Determine version
+    if (is.null(tag_name)) {
+      releases <- gh("GET /repos/{owner}/{repo}/releases")
+      tag_last_release <- try(releases[[1]][["tag_name"]], silent = TRUE)
+      if (inherits(tag_last_release, what = "try-error")) {
+        tag_name <- "0.1.0"
+      } else {
+        tag_integer <- unclass(package_version(tag_last_release))[[1]]
+        tag_integer[3] <- tag_integer[3] + 1
+        tag_name <- paste(tag_integer, collapse = ".")
+      }
+    }
+    if (is.null(release_name))
+      release_name <- tag_name
+
+    gert::git_push(verbose = FALSE)
+
+    check_github_has_SHA(SHA = SHA, tr = tr)
+
+    release <- gh(
+      "POST /repos/{owner}/{repo}/releases",
+      name = release_name,
+      tag_name = tag_name,
+      target_commitish = SHA,
+      draft = FALSE
+    )
+    cli::cli_process_done()
+  }, error = function(err) {
+    cli::cli_process_failed()
+  })
+  invisible()
+}
+
+git_remote_delete <- function(repo) {
+  tryCatch({
+    cli::cli_process_start("Deleting remote repository")
+    ownr <- gh::gh_whoami()$login
+    test_repo <- gert::git_remote_ls(remote = paste0("https://github.com/", ownr, "/", repo))
+    if (!inherits(test_repo, "data.frame"))
+      stop()
+    paste0("DELETE /repos/{owner}/{repo}")
+    gh("DELETE /repos/{owner}/{repo}",
+       owner = ownr,
+       repo = repo)
+    cli::cli_process_done()
+  }, error = function(err) {
+    cli::cli_process_failed()
+  })
+  invisible()
+}
+
+
+git_connect_or_create <- function(repo, remote_repo) {
+  # Connect to remote repo if possible
+  if (is.null(remote_repo)) {
+    cli_msg("i" = "Argument {.val remote_repo} is {.val NULL}; you are working with a local repository only.")
+    stop()
+  } else {
+    ownr <- gh::gh_whoami()$login
+    repo_name <- paste0(ownr, "/", remote_repo)
+    repo_url <- paste0("https://github.com/", repo_name)
+    test_repo <- try(gert::git_remote_ls(remote = repo_url), silent = TRUE)
+    repo_exists <- isFALSE(inherits(test_repo, "try-error"))
+    if (!repo_exists) {
+      git_remote_create(remote_repo, private = FALSE)
+    }
+    git_remote_connect(repo = repo, remote_repo = remote_repo)
+  }
+  git_remote_test(repo = repo)
+}
+
+
+#' @title Connect to Existing 'GitHub' Repository
+#' @description Given that a 'GitHub' user is configured, with the appropriate
+#' permissions, this function connects to an existing repository.
+#' @inheritParams git_update
+#' @param remote_repo Character, indicating the name of a repository on your
+#' account.
+#' @return Invisibly returns a list with the following elements:
+#'
+#' * repo_url: Character, URL of the connected repository
+#' * repo_exists: Logical
+#' * prior_commits: Logical
+#'
+#' @examples
+#' \dontrun{
+#' git_remote_connect()
+#' }
+#' @rdname git_remote_connect
+#' @export
+#' @seealso
+#'  \code{\link[gh]{gh_whoami}}
+#'  \code{\link[gert]{git_fetch}}, \code{\link[gert]{git_remote}}
+#' @export
+#' @importFrom gh gh_whoami
+#' @importFrom gert git_remote_ls git_remote_add
+git_remote_connect <- function(repo, remote_repo) {
+  # Connect to remote repo if possible
+  with_cli_try("Connecting to remote repository {.val {remote_repo}}", {
+    if (is.null(remote_repo))
+      stop()
+
+    ownr <- gh::gh_whoami()$login
+    repo_name <- paste0(ownr, "/", remote_repo)
+    repo_url <- paste0("https://github.com/", repo_name)
+    test_repo <- try(gert::git_remote_ls(remote = repo_url), silent = TRUE)
+    repo_exists <- isFALSE(inherits(test_repo, "try-error"))
+    if (!repo_exists)
+      stop()
+    if (nrow(test_repo) > 0) {
+      cli_msg("i" = "Remote repository already exists and has previous commits. Connect manually to avoid merge conflicts.")
+      stop()
+    }
+    Args_gert <- list(name = "origin",
+                      url = repo_url,
+                      repo = repo)
+    do.call(gert::git_remote_add, Args_gert)
+
+  })
+  return(git_remote_test(repo))
+}
+
+git_remote_test <- function(repo) {
+  # Tests
+  test_repo <- try(gert::git_remote_list(repo = repo), silent = TRUE)
+  repo_url <- tryCatch(test_repo$url[1], error = function(e){""})
+  repo_exists <- isTRUE(try(grepl("^https", repo_url), silent = TRUE))
+
+  if (repo_exists) {
+    prior_commits <- try(gert::git_remote_ls(remote = test_repo$url[1]), silent = TRUE)
+    prior_commits <- isFALSE(nrow(prior_commits) == 0)
+  } else {
+    prior_commits <- FALSE
+  }
+  invisible(return(
+    list(
+      repo_url = repo_url,
+      repo_exists = repo_exists,
+      prior_commits = prior_commits
+    )
+  ))
 }

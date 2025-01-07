@@ -217,19 +217,3 @@ skew_kurtosis.default <-
       return(out[c(1, 3, 4, 6)])
     }
   }
-
-#' @importFrom usethis ui_oops ui_done
-col_message <- function (..., col = 30, success = TRUE, verbose = TRUE){
-  if(verbose){
-    txt <- do.call(paste0, list(...))
-    # Check if this function is called from within an rmarkdown document.
-    # If that is the case, the colorized messages can cause knitting errors.
-    if(!any(grepl("rmarkdown", unlist(lapply(sys.calls(), `[[`, 1)), fixed = TRUE))){
-      if(success){
-        usethis::ui_done(txt)
-      } else {
-        usethis::ui_oops(txt)
-      }
-    }
-  }
-}

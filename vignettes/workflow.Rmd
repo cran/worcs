@@ -1,8 +1,8 @@
 ---
-title: "The WORCS workflow, version 0.1.6"
+title: "The WORCS workflow, version 0.1.16"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{The WORCS workflow, version 0.1.6}
+  %\VignetteIndexEntry{The WORCS workflow, version 0.1.16}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: "vignettes.bib"
@@ -76,7 +76,8 @@ knitr::include_graphics("workflow.png")
     + Use code chunks to perform the analyses. The first code chunk should call `load_data()`
     + Finish each sentence with one carriage return (enter); separate paragraphs with a double carriage return.
 10. <!--S: Commit every small change to the 'Git' repository-->Regularly Commit your progress to the Git repository; ideally, after completing each small and clearly defined task.
-    + In the top-right panel of 'RStudio', select the 'Git' tab
+    + Call `git_update("Describe the changes made since the last commit")` to Add all new files (not blocked by `.gitignore`), Commit them, and Push the changes to a remote repository, all in one step
+    + For more control, select the 'Git' tab in the top-right panel of 'RStudio'
     + Select the checkboxes next to all files whose changes you wish to Commit
     + Click the Commit button.
     + In the pop-up window, write an informative "Commit message".
@@ -118,7 +119,7 @@ knitr::include_graphics("workflow.png")
     + To retain essential citations only, change the front matter of the 'manuscript.Rmd' file:  
     Change `knit: worcs::cite_all` to `knit: worcs::cite_essential`
 19. <!--S: Optional: [Publish the PDF as a preprint, and add it to the OSF project](https://help.osf.io/article/177-upload-a-preprint)-->Optional: [Publish preprint in a not-for-profit preprint repository such as PsyArchiv, and connect it to your existing OSF project](https://help.osf.io/article/177-upload-a-preprint)
-    + Check [Sherpa Romeo](http://sherpa.ac.uk/romeo/index.php) to be sure that your intended outlet allows the publication of preprints; many journals do, nowadays - and if they do not, it is worth considering other outlets.
+    + Check [Open Policy Finder](https://openpolicyfinder.jisc.ac.uk/) to be sure that your intended outlet allows the publication of preprints; many journals do, nowadays - and if they do not, it is worth considering other outlets.
 20. <!--S: Submit the paper, and [tag the commit of the submitted paper as a release](https://docs.github.com/en/free-pro-team@latest/github/administering-a-repository/managing-releases-in-a-repository) of the submitted paper as a release, as in Step 4.-->Submit the paper, and [tag the commit of the submitted paper as a release](https://docs.github.com/en/free-pro-team@latest/github/administering-a-repository/managing-releases-in-a-repository), as in Step 4.
 
 ### Notes for cautious researchers

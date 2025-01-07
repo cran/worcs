@@ -22,6 +22,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(c("worcs_checklist"))
 #' worcs_badge(path = example_dir,
 #' update_readme = NULL)
 #' @rdname worcs_badge
+#' @importFrom usethis use_badge
 #' @export
 worcs_badge <- function(path = ".",
                         update_readme = "README.md",
@@ -46,29 +47,16 @@ worcs_badge <- function(path = ".",
     }
   }
   if(!is.null(update_readme)){
-    tryCatch({
-      if(!is_abs(update_readme)){ # is relative
-        update_readme <- file.path(ndir, update_readme)
-      }
-      text <- readLines(update_readme, encoding = "UTF-8")
-      loc <- startsWith(text, "[![WORCS](https://img.shields.io/badge/WORC")
-      if(any(loc)){
-        loc <- which(loc)[1]
-        text <- text[-loc]
-        loc <- loc-1
-      } else {
-        loc <- which(startsWith(text, "#"))[1]+1
-      }
-      text <- append(x = text,
-             values = switch(level,
-                             perfect = c("", "[![WORCS](https://img.shields.io/badge/WORCS-perfect-blue)](https://osf.io/zcvbs/)", ""),
-                             limited = c("", "[![WORCS](https://img.shields.io/badge/WORCS-limited-orange)](https://osf.io/zcvbs/)", ""),
-                             open = c("", "[![WORCS](https://img.shields.io/badge/WORCS-open%20science-brightgreen)](https://osf.io/zcvbs/)", ""),
-                             c("", "[![WORCS](https://img.shields.io/badge/WORCS-fail-red)](https://osf.io/zcvbs/)", "")),
-             after = loc
-      )
-      write_as_utf(text, update_readme)
-    }, error = function(e){warning("Could not update README.md")})
+    if(!is_abs(update_readme)){ # is relative
+      update_readme <- file.path(ndir, update_readme)
+    }
+
+    switch(level,
+           perfect = usethis::use_badge("WORCS", "https:doi.org/10.3233/DS-210031", src = "https://img.shields.io/badge/WORCS-perfect-blue"),
+           limited = usethis::use_badge("WORCS", "https:doi.org/10.3233/DS-210031", src = "https://img.shields.io/badge/WORCS-limited-orange"),
+           open = usethis::use_badge("WORCS", "https:doi.org/10.3233/DS-210031", src = "https://img.shields.io/badge/WORCS-open%20science-brightgreen"),
+           usethis::use_badge("WORCS", "https:doi.org/10.3233/DS-210031", src = "https://img.shields.io/badge/WORCS-fail-red")
+    )
   }
   if(!is.null(update_csv)){
     if(!is_abs(update_csv)){ # is relative
