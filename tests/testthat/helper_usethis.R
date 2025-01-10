@@ -1,3 +1,14 @@
+skip_if_not_pandoc <- function(ver = NULL) {
+  if (!pandoc_available(ver)) {
+    msg <- if (is.null(ver)) {
+      "Pandoc is not available"
+    } else {
+      sprintf("Version of Pandoc is lower than %s.", ver)
+    }
+    skip(msg)
+  }
+}
+
 # copied from usethis:
 # https://github.com/r-lib/usethis/blob/b2e894eb6d1d7f3312a783db3bb03a7cc309ba61/tests/testthat/helper.R
 library(usethis)
@@ -61,7 +72,7 @@ scoped_temporary_thing <- function(dir = fs::file_temp(pattern = pattern),
   )
 
   withr::defer(usethis::proj_set(old_project, force = TRUE), envir = env)
-  proj_set(dir)
+  usethis::proj_set(dir)
 
   withr::defer(
     {
@@ -69,9 +80,9 @@ scoped_temporary_thing <- function(dir = fs::file_temp(pattern = pattern),
     },
     envir = env
   )
-  setwd(proj_get())
+  setwd(usethis::proj_get())
 
-  invisible(proj_get())
+  invisible(usethis::proj_get())
 }
 
 test_mode <- function() {
