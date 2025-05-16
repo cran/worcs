@@ -25,18 +25,14 @@ editor, using \code{\link[utils]{file.edit}}.
 }
 \examples{
 \dontrun{
-# Create directory to run the example
-old_wd <- getwd()
-test_dir <- file.path(tempdir(), "entrypoint")
-dir.create(test_dir)
-setwd(test_dir)
-# Prepare worcs file and dummy entry point
-worcs:::write_worcsfile(".worcs", entry_point = "test.txt")
-writeLines("Hello world", con = file("test.txt", "w"))
-# Demonstrate load_entrypoint()
-load_entrypoint()
-# Cleaning example directory
-setwd(old_wd)
-unlink(test_dir, recursive = TRUE)
+if(requireNamespace("withr", quietly = TRUE)){
+  withr::with_tempdir({
+    # Prepare worcs file and dummy entry point
+    worcs:::write_worcsfile(".worcs", entry_point = "test.txt")
+    writeLines("Hello world", con = file("test.txt", "w"))
+    # Demonstrate load_entrypoint()
+    load_entrypoint()
+  })
+}
 }
 }

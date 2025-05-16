@@ -34,15 +34,13 @@
 #' @return Returns \code{NULL} invisibly. This
 #' function is called for its side effects.
 #' @examples
-#' test_dir <- file.path(tempdir(), "data")
-#' old_wd <- getwd()
-#' dir.create(test_dir)
-#' setwd(test_dir)
-#' worcs:::write_worcsfile(".worcs")
-#' df <- iris[1:5, ]
-#' open_data(df, codebook = NULL)
-#' setwd(old_wd)
-#' unlink(test_dir, recursive = TRUE)
+#' if(requireNamespace("withr", quietly = TRUE)){
+#'   withr::with_tempdir({
+#'     file.create(".worcs")
+#'     df <- iris[1:5, ]
+#'     open_data(df, codebook = NULL)
+#'   })
+#' }
 #' @seealso open_data closed_data save_data
 #' @export
 #' @rdname open_data
@@ -75,15 +73,14 @@ open_data <- function(data,
 #' @return Returns \code{NULL} invisibly. This
 #' function is called for its side effects.
 #' @examples
-#' old_wd <- getwd()
-#' test_dir <- file.path(tempdir(), "data")
-#' dir.create(test_dir)
-#' setwd(test_dir)
-#' worcs:::write_worcsfile(".worcs")
-#' df <- iris[1:3, ]
-#' closed_data(df, codebook = NULL)
-#' setwd(old_wd)
-#' unlink(test_dir, recursive = TRUE)
+#' if(requireNamespace("withr", quietly = TRUE)){
+#'   withr::with_tempdir({
+#'     file.create(".worcs")
+#'     df <- iris[1:3, ]
+#'     df$Species <- droplevels(df$Species)
+#'     closed_data(df, codebook = NULL)
+#'   })
+#' }
 #' @seealso open_data closed_data save_data
 #' @export
 #' @rdname closed_data
@@ -347,21 +344,19 @@ check_data_resources <- function(dn_worcs = ".", worcsfile = NULL, verbose = TRU
 #' empty, and the loaded data files are attached directly to the global
 #' environment.
 #' @examples
-#' test_dir <- file.path(tempdir(), "loaddata")
-#' old_wd <- getwd()
-#' dir.create(test_dir)
-#' setwd(test_dir)
-#' worcs:::write_worcsfile(".worcs")
-#' df <- iris[1:5, ]
-#' suppressWarnings(closed_data(df, codebook = NULL))
-#' load_data()
-#' data
-#' rm("data")
-#' file.remove("data.csv")
-#' load_data()
-#' data
-#' setwd(old_wd)
-#' unlink(test_dir, recursive = TRUE)
+#' if(requireNamespace("withr", quietly = TRUE)){
+#'   withr::with_tempdir({
+#'     file.create(".worcs")
+#'     df <- iris[1:5, ]
+#'     df$Species <- droplevels(df$Species)
+#'     closed_data(df, codebook = NULL)
+#'     temp_env <- new.env()
+#'     load_data(envir = temp_env)
+#'     rm("df", envir = temp_env)
+#'     file.remove("df.csv")
+#'     load_data(envir = temp_env)
+#'   })
+#' }
 #' @rdname load_data
 #' @export
 #' @importFrom digest digest
@@ -487,10 +482,7 @@ check_metadata <- function(x, codebook, value_labels, verbose = FALSE){
   x
 }
 
-cs_fun <- function(filename, worcsfile = ".worcs"){
-  dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcsfile))))
-  # fn_rel <- path_rel_worcs(filename, dn_worcs)
-  # fn_abs <- path_abs_worcs(fn_rel, dn_worcs = dn_worcs)
+cs_fun <- function(filename){
   tryCatch({
     if(is_binary(filename)){
       digest::digest(filename, file = TRUE)
@@ -509,7 +501,7 @@ store_checksum <- function(filename, entry_name = filename, worcsfile = ".worcs"
   #cs <- digest(object = filename, file = TRUE)
   #cs <- tools::md5sum(files = filename)
   checkworcs(dirname(worcsfile), iserror = FALSE)
-  cs <- cs_fun(filename, worcsfile = worcsfile)
+  cs <- cs_fun(filename)
   checksums <- list(cs)
   names(checksums) <- entry_name
   do.call(write_worcsfile,
@@ -541,7 +533,7 @@ load_checksum <- function(filename){
 
 #' @importFrom digest digest
 check_sum <- function(filename, old_cs = NULL, worcsfile = ".worcs", error = FALSE){
-  cs <- cs_fun(filename, worcsfile = worcsfile)
+  cs <- cs_fun(filename)
   if(is.null(old_cs)){
     old_cs <- load_checksum(filename = filename)
   }
@@ -638,7 +630,7 @@ write_gitig <- function(filename, ..., modify = TRUE){
 #' df <- iris
 #' class(df) <- c("worcs_data", class(df))
 #' attr(df, "type") <- "synthetic"
-#' notify_synthetic(df, msg = "synthetic")
+#' result <- capture.output(notify_synthetic(df, msg = "synthetic"))
 #' @rdname notify_synthetic
 #' @export
 #' @seealso closed_data synthetic add_synthetic

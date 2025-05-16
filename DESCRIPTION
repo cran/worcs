@@ -1,7 +1,7 @@
 Package: worcs
 Type: Package
 Title: Workflow for Open Reproducible Code in Science
-Version: 0.1.17
+Version: 0.1.18
 Authors@R: c(
     person(
       given = c("Caspar", "J."),
@@ -35,7 +35,8 @@ Description: Create reproducible and transparent research projects in 'R'.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/cjvanlissa/worcs
+URL: https://github.com/cjvanlissa/worcs,
+        https://cjvanlissa.github.io/worcs/
 RoxygenNote: 7.3.2
 Imports: methods, rmarkdown, renv, prereg (>= 0.6.0), gert (>= 2.0.1),
         ranger, yaml, digest, rticles (>= 0.27), tinytex, credentials,
@@ -46,11 +47,12 @@ Suggests: papaja (>= 0.1.1), targets, lavaan, tidySEM, tarchetypes,
 SystemRequirements: pandoc (>= 1.14) - https://pandoc.org
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2025-01-10 10:50:18 UTC; vanlissa
-Author: Caspar J. Van Lissa [aut, cre]
-    (<https://orcid.org/0000-0002-0808-5024>),
-  Aaron Peikert [aut] (<https://orcid.org/0000-0001-7813-818X>),
-  Andreas M. Brandmaier [aut] (<https://orcid.org/0000-0001-8765-6982>)
+Packaged: 2025-05-16 08:34:47 UTC; vanlissa
+Author: Caspar J. Van Lissa [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-0808-5024>),
+  Aaron Peikert [aut] (ORCID: <https://orcid.org/0000-0001-7813-818X>),
+  Andreas M. Brandmaier [aut] (ORCID:
+    <https://orcid.org/0000-0001-8765-6982>)
 Maintainer: Caspar J. Van Lissa <c.j.vanlissa@tilburguniversity.edu>
 Repository: CRAN
-Date/Publication: 2025-01-10 15:50:02 UTC
+Date/Publication: 2025-05-16 09:50:02 UTC
