@@ -336,7 +336,7 @@ check_github_has_SHA <- utils::getFromNamespace("check_github_has_SHA", "usethis
 #' \dontrun{
 #' git_release_publish()
 #' }
-#' @rdname git_remote_create
+#' @rdname git_release_publish
 #' @export
 #' @importFrom cli cli_process_start cli_process_done cli_process_failed
 #' @importFrom gh gh gh_whoami
@@ -353,18 +353,19 @@ git_release_publish <- function(repo = ".",
     usethis::with_project(repo, code = {
       check_can_push(tr = tr, "to create a release")
     }, quiet = TRUE)
-    usethis::with_project("c:/git_repositories/worcs",
-                          code = {
-                            dat <- get_release_data(tr)
-                          },
-                          quiet = TRUE)
+    # This seems to only work for R-packages, don't do this:
+    # usethis::with_project("c:/git_repositories/worcs",
+    #                       code = {
+    #                         dat <- get_release_data(tr)
+    #                       },
+    #                       quiet = TRUE)
 
     # Get current commit hash
     SHA = gert::git_info(repo = repo)$commit
     gh <- gh_tr(tr)
     # Determine version
     if (is.null(tag_name)) {
-      releases <- gh("GET /repos/{owner}/{repo}/releases")
+      releases <- gh("GET /repos/{owner}/{repo}/releases", owner = tr$repo_owner, repo = tr$repo_name)
       tag_last_release <- try(releases[[1]][["tag_name"]], silent = TRUE)
       if (inherits(tag_last_release, what = "try-error")) {
         tag_name <- "0.1.0"
@@ -377,7 +378,7 @@ git_release_publish <- function(repo = ".",
     if (is.null(release_name))
       release_name <- tag_name
 
-    gert::git_push(verbose = FALSE)
+    gert::git_push(repo = repo, verbose = FALSE)
 
     check_github_has_SHA(SHA = SHA, tr = tr)
 
