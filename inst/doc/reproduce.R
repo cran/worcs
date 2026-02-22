@@ -4,3 +4,6 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+## ----eval = FALSE-------------------------------------------------------------
+# check_worcs_installation()
+

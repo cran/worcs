@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Archiving a WORCS Project on ‘Zenodo’</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Archiving a WORCS Project on ‘Zenodo’</h1>
+
+
+
+<p>This tutorial takes the user through distinct steps involved in
+archiving a <code>worcs</code> project on ‘Zenodo’. As open science
+infrastructure is an area of active development, the approach proposed
+here should not be considered definitive, but rather, as one proposal
+for a FAIR-compliant way to archive code repositories using
+infrastructure available at the time of writing.</p>
+<div id="steps-involved" class="section level3">
+<h3>Steps Involved</h3>
+<ul class="task-list">
+<li><label><input type="checkbox"></input>You have an existing
+<code>worcs</code> project folder. If not, follow <a href="https://cjvanlissa.github.io/worcs/articles/workflow.html">the
+<code>worcs</code> workflow</a> to create one.</label></li>
+<li><label><input type="checkbox"></input>Make sure that this folder is
+version controlled with ‘Git’</label></li>
+<li><label><input type="checkbox"></input>Make sure that the local repository
+is connected to a remote (‘GitHub’) repository</label></li>
+<li><label><input type="checkbox"></input>Snapshot <code>renv</code>
+dependencies</label></li>
+<li><label><input type="checkbox"></input>Turn on ‘Zenodo’ archiving for the
+remote repository</label></li>
+<li><label><input type="checkbox"></input>Publish a release of your project on
+‘GitHub’</label></li>
+<li><label><input type="checkbox"></input>Verify that ‘Zenodo’ mints a DOI for
+your project and its latest release</label></li>
+</ul>
+</div>
+<div id="check-git-and-github" class="section level2">
+<h2>Check ‘Git’ and ‘GitHub’</h2>
+<p>Start by opening the project folder, for example, in ‘RStudio’.</p>
+<p>We will use ‘Git’ to version control the project folder. If you do
+not already have ‘Git’ installed on your computer, <a href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">install
+it now</a>. You can verify that ‘Git’ is installed and working by
+running:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">check_git</span>()</span></code></pre></div>
+<p>If ‘Git’ is indeed installed, you can check whether your current
+project is using ‘Git’ for version control. Run:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>gert<span class="sc">::</span><span class="fu">git_status</span>()</span></code></pre></div>
+<p>This should return a <code>tibble</code> with all files being tracked
+by ‘Git’. Next, run:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">check_github</span>()</span></code></pre></div>
+<p>You should receive a notification that
+<code>&quot;Active project has a remote repository&quot;</code>. If you do not
+receive this notification, first connect your local repository to
+GitHub.</p>
+</div>
+<div id="optionally-connect-local-to-remote-github-repository" class="section level2">
+<h2>Optionally: Connect Local to Remote (‘GitHub’) Repository</h2>
+<p>If your local repository is not yet connected to ‘GitHub’, do so
+now.</p>
+<p>Before proceeding, ensure you <a href="https://github.com/">have a
+‘GitHub’ account</a>. Academics may qualify for a <a href="https://github.com/education/teachers">free upgrade</a>. To
+authorize ‘R’ to interact with your ‘GitHub’ account, run
+<code>usethis::create_github_token()</code>, which takes you to a
+website to create a personal access token (PAT). Copy it, then run
+<code>gitcreds::gitcreds_set()</code> and paste the PAT when asked. If
+you still experience problems try <code>usethis::gh_token_help()</code>
+for help.</p>
+<p>To check that you are ready to proceed, run:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">check_github</span>()</span></code></pre></div>
+<p>If you see a green checkmark, you can create a new repository on
+‘GitHub’ directly from ‘R’:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">git_remote_create</span>(<span class="st">&quot;repository_name&quot;</span>, <span class="at">private =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<p>This command will create a new public repository on ‘GitHub’ and link
+it to your local repository. The <code>private = FALSE</code> argument
+ensures the repository is public by default.</p>
+<p>Alternatively, you may have already created a remote repository on
+the ‘GitHub’ website. Either way, replace <code>repository_name</code>
+with the actual name you want to use, and connect your local repository
+like so:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">git_remote_connect</span>(project_path, <span class="at">remote_repo =</span> <span class="st">&quot;repository_name&quot;</span>)</span></code></pre></div>
+</div>
+<div id="snapshot-renv-dependencies" class="section level2">
+<h2>Snapshot <code>renv</code> Dependencies</h2>
+<p>To ensure that your local R-package dependencies are correctly
+archived, your project should use <code>renv</code>. Before actually
+archiving the project, you should make sure that these dependencies are
+up to date. Do this by running:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>renv<span class="sc">::</span><span class="fu">snapshot</span>()</span></code></pre></div>
+</div>
+<div id="pushing-these-changes-to-the-remote-repository" class="section level2">
+<h2>Pushing These Changes to the Remote Repository</h2>
+<p>Version control requires adding files to be tracked to the repository
+(<code>gert::git_add()</code>), committing changes to those files
+(<code>gert::git_commit()</code>), and pushing them to the remote
+repository (<code>gert::git_push()</code>). The <code>worcs</code>
+function <code>worcs::git_update()</code> combines these three actions,
+acting like a kind of “quick-save” function:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">git_update</span>(<span class="st">&quot;Preparing to archive my project&quot;</span>)</span></code></pre></div>
+</div>
+<div id="check-your-github-repository" class="section level2">
+<h2>Check Your ‘GitHub’ Repository</h2>
+<p>Navigate to your repository on ‘GitHub’ and check that all committed
+files are now visible in the remote repository. Furthermore, the
+repository visibility must be set to “Public” to ensure that ‘Zenodo’
+can discover and archive it. If necessary, change the visibility setting
+to Public by clicking on “Settings” &gt; “General” &gt; “Change
+repository visibility.”</p>
+</div>
+<div id="login-to-zenodo" class="section level2">
+<h2>Login to ‘Zenodo’</h2>
+<p>Head over to <a href="https://zenodo.org">zenodo.org</a>. ‘Zenodo’ is
+a platform where you can permanently archive your code and other project
+elements. ‘Zenodo’ does this by assigning projects a <strong>Digital
+Object Identifier</strong> (DOI), which also helps to make the work more
+citable. This is different to ‘GitHub’, which acts as a place where the
+actual work on a project takes place, rather than long-term archiving of
+it. At ‘GitHub’, content can be modified, deleted, rewritten, and
+irreversibly changed, which makes it a bit concerning to be used for
+longer lasting referencing purposes. ‘Zenodo’ offers more security and
+permanence for research outputs.</p>
+<p>If you already have a ‘Zenodo’ account, this is easy. If not, follow
+the steps to create one — you can <strong>login using your ‘GitHub’
+account</strong>.</p>
+</div>
+<div id="authorize-github-to-connect-with-zenodo" class="section level2">
+<h2>Authorize ‘GitHub’ to connect with ‘Zenodo’</h2>
+<p>On the ‘Zenodo’ website authorize it to connect to your ‘GitHub’
+account in the ‘<a href="https://zenodo.org/account/settings/github/">Using ’GitHub’</a>’
+section. Here, ‘Zenodo’ will redirect you to ‘GitHub’ to ask for
+permissions to use ‘<a href="https://developer.github.com/webhooks/">webhooks</a>’ on your
+repositories. You want to authorize ‘Zenodo’ here with the permissions
+it needs to form those links.</p>
+</div>
+<div id="select-the-repository-to-archive" class="section level2">
+<h2>Select the Repository to Archive</h2>
+<p>If you have got this far, this means that ‘Zenodo’ is now authorized
+to configure the repository webhooks that it needs to archive the
+repository and issue it a DOI. To do this, on the ‘Zenodo’ website
+navigate to the <a href="https://zenodo.org/account/settings/github/">‘GitHub’ repository
+listing page</a> and simply “flip the switch” next to your repository.
+If your repository <strong>does not show up</strong> in the list, you
+may need to press the ‘Synchronize now’ button. At the time of writing,
+we noticed that it can take quite a while (hours?) for ‘Zenodo’ to
+detect new ‘GitHub’ repositories. If so, take a break or come back to
+this last step tomorrow!</p>
+</div>
+<div id="optional-check-repository-settings" class="section level2">
+<h2><em>Optional:</em> Check repository settings</h2>
+<p>If you were successful, you have now set up a new webhook between
+‘Zenodo’ and your repository.</p>
+<p>Optionally, you can verify this. In ‘GitHub’, click on the settings
+for your repository, and the Webhooks tab on the left hand side menu.
+This should display the new ‘Zenodo’ webhook configured to ‘Zenodo’.
+Note, it may take a little time for the webhook listing to show up.</p>
+</div>
+<div id="create-a-new-release" class="section level2">
+<h2>Create a New Release</h2>
+<p>To archive a repository on ‘Zenodo’, you must create a new release.
+You can do this using the following code:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">git_release_publish</span>()</span></code></pre></div>
+<p>If you have not previously published any releases, this function will
+assume that you want to use semantic versioning for both the release tag
+and the release title. This means that the first release will be labeled
+with version number “0.1.0”. Each subsequent release will automatically
+increment the trailing digit, i.e.: “0.1.1”, “0.1.2”. If you make a
+major change to your project, you may want to manually increment the
+middle digit like so:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>worcs<span class="sc">::</span><span class="fu">git_release_publish</span>(<span class="at">repo =</span> <span class="st">&quot;.&quot;</span>,</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>                           <span class="at">tag_name =</span> <span class="st">&quot;0.2.0&quot;</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>                           <span class="at">release_name =</span> <span class="st">&quot;0.2.0&quot;</span>)</span></code></pre></div>
+</div>
+<div id="verify-on-zenodo" class="section level2">
+<h2>Verify on ‘Zenodo’</h2>
+<p>To verify that your release was archived on ‘Zenodo’ and assigned a
+DOI, you need to visit the <a href="https://zenodo.org/deposit">Uploads</a> tab.</p>
+</div>
+<div id="optionally-updating-meta-data" class="section level2">
+<h2>Optionally: Updating Meta-Data</h2>
+<p>We can further document our ‘Zenodo’ archive by adding some extra
+information on ‘Zenodo’. On ‘Zenodo’ click the <a href="https://zenodo.org/deposit">Upload</a> tab in the main menu, where
+you should find your newly uploaded repository.</p>
+</div>
+<div id="verifying-that-zenodo-mints-a-doi-for-your-project" class="section level2">
+<h2>Verifying That ‘Zenodo’ Mints a DOI for Your Project</h2>
+<p>After publishing a release, ‘Zenodo’ will archive the repository and
+mint a DOI. Verify this by checking the ‘Zenodo’ entry for your
+repository, where the DOI will be displayed. Include this DOI in any
+citations or references to your code to enhance its discoverability and
+reusability.</p>
+<p>The ‘GitHub’/‘Zenodo’ integration will assign one “mother-DOI” to the
+project, which will always resolve to the latest version, as well as a
+unique DOI to each version/release of the code. This enables users to
+refer to and cite either the repository in general or specific versions
+of it. The list of authors for the citation is automatically determined
+by the ‘GitHub’ user account names used by the repository - this can be
+edited on ‘Zenodo’, as explained above. DOIs used in ‘Zenodo’ are
+registered through the <a href="https://www.datacite.org/">DataCite</a>
+service.</p>
+<blockquote>
+<p><strong>Pro-tip</strong>: Check the <code>Citation</code> field on
+the ‘Zenodo’ page, and copy-paste it into the README file of your
+‘GitHub’ repo to make cross-linking even easier (or refer users to the
+‘Zenodo’ page to find the citation, which obviates the need to manually
+update this information). Click the DOI badge in the
+<code>Details</code> field to get instructions on how to add a clear
+highlighted DOI badge to your ‘GitHub’ repository, for users to see and
+make use of your DOI:</p>
+</blockquote>
+<p><a href="https://doi.org/10.5281/zenodo.14552329"><img role="img" aria-label="DOI" src="data:image/svg+xml;base64,CiAgICAgICAgICA8aHRtbD4KICAgICAgICAgIDxoZWFkPjx0aXRsZT40MDMgRm9yYmlkZGVuPC90aXRsZT48L2hlYWQ+CiAgICAgICAgICA8Ym9keSBzdHlsZT0ibWF4LXdpZHRoOiA2MDBweDsgbWFyZ2luOiA0MHB4IGF1dG87IHBhZGRpbmc6IDAgMjBweDsgbGluZS1oZWlnaHQ6IDEuNjsiPgogICAgICAgICAgPGgxPjQwMyBGb3JiaWRkZW48L2gxPgogICAgICAgICAgPGhyPgogICAgICAgICAgPHA+QWNjZXNzIHRvIHRoaXMgcmVzb3VyY2UgaGFzIGJlZW4gYmxvY2tlZCBkdWUgdG8gdW51c3VhbCB0cmFmZmljIGZyb20geW91ciBuZXR3b3JrLjwvcD4KICAgICAgICAgIDxwPklmIHlvdSBiZWxpZXZlIHRoaXMgaXMgYSBtaXN0YWtlLCBwbGVhc2UgY29udGFjdCA8YSBocmVmPSJtYWlsdG86c3VwcG9ydEB6ZW5vZG8ub3JnIj5zdXBwb3J0QHplbm9kby5vcmc8L2E+IHdpdGggdGhlIHJlZmVyZW5jZSBpbmZvcm1hdGlvbiBiZWxvdy48L3A+CiAgICAgICAgICA8cD4KICAgICAgICAgIDxzdHJvbmc+UmVmZXJlbmNlOjwvc3Ryb25nPiA8Y29kZT4xYjllNDM5MzZhZWFhNjM5MDcwOGNkZDVlODcwODEzYjwvY29kZT48YnI+CiAgICAgICAgICA8c3Ryb25nPlRpbWVzdGFtcDo8L3N0cm9uZz4gPGNvZGU+MjAyNi0wMi0yMlQwODo0MzoxOCswMTowMDwvY29kZT48YnI+CiAgICAgICAgICA8L3A+CiAgICAgICAgICA8L2JvZHk+CiAgICAgICAgICA8L2h0bWw+CiAgICAgICAg" alt="DOI" /></a></p>
+</div>
+<div id="congratulations" class="section level2">
+<h2>CONGRATULATIONS!</h2>
+<p>Your repository is now archived in ‘Zenodo’, and with a DOI that can
+be versioned to reflect updates to the repository version through time.
+You should be able to see details of this on the ‘GitHub’ ‘Zenodo’ page
+for your repository. This also means that your archived projects can get
+picked up by other indexing services and search engines that use DOIs
+too.</p>
+<p>Providing a long-term archive and a DOI for your work is required for
+others to be able to properly cite it, as this provides basic citation
+metadata. For Open Science, it is important to be able to
+comprehensively cite the resources that you use in your research,
+including code, and this workflow enables that to happen, in line with
+best practices.</p>
+<blockquote>
+<p><strong>Pro-tip</strong>: Is your research funded by an EU grant? Now
+you can directly connect your repository to your grant by updating the
+grant section of the metadata on the project’s ‘Zenodo’ record. This
+massively helps to increase its discoverability!</p>
+</blockquote>
+</div>
+<div id="checklist-for-citing-your-project" class="section level2">
+<h2>Checklist for citing your project</h2>
+<p>So now you have a sustainably archived ‘GitHub’ repository in
+‘Zenodo’ that is ready to be re-used and cited! Before continuing, make
+sure that you have:</p>
+<ul class="task-list">
+<li><label><input type="checkbox"></input>Linked your ‘GitHub’ project to
+‘Zenodo’. If you see a complete copy of your ‘GitHub’ repository in
+‘Zenodo’ then things are working.</label></li>
+<li><label><input type="checkbox"></input>‘Zenodo’ and ‘GitHub’ integrated
+setup works nicely. For example have all the author names, and correct
+project title come across to ‘Zenodo’. If not, or if authors just have
+nicknames you can edit these details in ‘Zenodo’.</label></li>
+<li><label><input type="checkbox"></input>Project has a first release, with a
+DOI. You should have a DOI displayed on your projects ‘Zenodo’ page.
+This first DOI is called the ‘concept DOI’ and is the master DOI linking
+to all subsequent release DOIs. Copy this DOI link and embed it in your
+‘GitHub’ projects README page. You’re done!</label></li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

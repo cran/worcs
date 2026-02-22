@@ -1,9 +1,8 @@
 #' @title Add endpoint to WORCS project
-#' @description Add a specific endpoint to the WORCS project file. Endpoints are
-#' files that are expected to be exactly reproducible (e.g., a manuscript,
-#' figure, table, et cetera). Reproducibility is checked by ensuring the
-#' endpoint's checksum is unchanged.
-#' @param filename Character, indicating the file to be tracked as endpoint.
+#' @description Add a specific endpoint to the WORCS project file (a filename,
+#' or `"testthat"` integration tests), see Details.
+#' @param filename Character, indicating a file to be tracked as endpoint,
+#' or `"testthat"` to add a folder of integration tests as endpoints.
 #' Default: NULL.
 #' @param worcs_directory Character, indicating the WORCS project directory
 #' to which to save data. The default value "." points to the current directory.
@@ -11,6 +10,20 @@
 #' @param verbose Logical. Whether or not to print status messages to the
 #' console. Default: TRUE
 #' @param ... Additional arguments.
+#' @details
+#' Endpoints are either:
+#'
+#' 1. Files that are expected to be exactly reproducible (e.g.,
+#' `"manuscript.html"`, `"myfigure.png"`, `"results_table.csv"`, et cetera).
+#' For individual files, reproducibility is checked by ensuring that the
+#' endpoint's checksum is unchanged, see \link[digest]{digest}. Be mindful that
+#' the checksum also changes if two files are practically, but not literally,
+#' identical. This can occur when using random numbers anywhere in your analysis
+#' (e.g., Monte Carlo estimation, or even jittering points in a plot), or when
+#' numbers are rounded differently in the 15th decimal on different computers.
+#' 2. A folder of integration tests, created using the `testthat` package (see
+#' \link[worcs]{add_testthat}). Note that `testthat` allows you, for example, to
+#' test whether numbers are equal within rounding tolerance.
 #' @return No return value. This function is called for its side effects.
 #' @examples
 #' # Create directory to run the example
@@ -31,37 +44,29 @@
 #' @export
 #' @importFrom yaml read_yaml
 add_endpoint <- function(filename = NULL, worcs_directory = ".", verbose = TRUE, ...){
-  dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory),
-                                                        ".worcs")))
+  dn_worcs <- worcs_root(path = worcs_directory)
   fn_worcs <- file.path(dn_worcs, ".worcs")
   worcsfile <- yaml::read_yaml(fn_worcs)
-  endpoints <- worcsfile[["endpoints"]]
-  # if(is.null(entry_point)){
-  #   if(is.null(worcsfile[["entry_point"]])){
-  #     stop("No 'entry_point' specified, and the project contains no existing entry points.")
-  #   } else {
-  #     if(length(worcsfile[["entry_point"]]) > 1){
-  #       stop("No 'entry_point' specified, and the project contains multiple entry points. Specify one of the following: ", paste0("'", names(worcsfile[["entry_point"]])))
-  #     }
-  #   }
-  #
-  # }
-  fn_endpoint <- path_abs_worcs(filename, dn_worcs)
-  if(!file.exists(fn_endpoint)){
-    stop("The file does not exist: ", filename)
+  # Handle testthat
+  if(isTRUE(filename == "testthat")){
+    with_cli_try("Adding `testthat` test suite as endpoint to {.file .worcs} file.", {
+      write_worcsfile(filename = fn_worcs, testthat_endpoint = TRUE, modify = TRUE)
+      return(invisible())
+    })
   }
-  endpoints <- append(endpoints, filename)
-  endpoints <- unique(endpoints)
-  # Append worcsfile
-  tryCatch({
-    if(!is_quiet()) cli::cli_process_start("Adding endpoint {.val {filename}} to '.worcs'.")
+  # Handle regular endpoints
+  with_cli_try("Adding endpoint {.val {filename}} to '.worcs'.", {
+    endpoints <- worcsfile[["endpoints"]]
+    fn_endpoint <- file.path(dn_worcs, filename)
+    if(!file.exists(fn_endpoint)){
+      stop("The file does not exist: ", filename)
+    }
+    endpoints <- append(endpoints, filename)
+    endpoints <- unique(endpoints)
+    # Append worcsfile
     write_worcsfile(filename = fn_worcs, endpoints = endpoints, modify = TRUE)
     store_checksum(fn_endpoint, entry_name = filename, worcsfile = fn_worcs)
-    cli::cli_process_done() },
-    error = function(err) {
-      cli::cli_process_failed()
-    }
-  )
+  })
   invisible()
 }
 
@@ -93,8 +98,7 @@ add_endpoint <- function(filename = NULL, worcs_directory = ".", verbose = TRUE,
 #'  \code{\link[worcs]{check_endpoints}}
 #' @export
 snapshot_endpoints <- function(worcs_directory = ".", verbose = TRUE, ...){
-  dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory),
-                                                        ".worcs")))
+  dn_worcs <- worcs_root(path = worcs_directory)
   fn_worcs <- file.path(dn_worcs, ".worcs")
   worcsfile <- yaml::read_yaml(fn_worcs)
   if(is.null(worcsfile[["endpoints"]])){
@@ -142,45 +146,51 @@ snapshot_endpoints <- function(worcs_directory = ".", verbose = TRUE, ...){
 #'  \code{\link[worcs]{snapshot_endpoints}}
 #' @export
 check_endpoints <- function(worcs_directory = ".", verbose = TRUE, ...){
-  dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory),
-                                                        ".worcs")))
+  dn_worcs <- worcs_root(path = worcs_directory)
   fn_worcs <- file.path(dn_worcs, ".worcs")
   worcsfile <- yaml::read_yaml(fn_worcs)
-  if(is.null(worcsfile[["endpoints"]])){
-    if(interactive()){
-      col_message("No endpoints found in WORCS project.", verbose = verbose, success = FALSE)
+  replicates <- TRUE
+  with_cli_try("Checking endpoints.", {
+    if(is.null(worcsfile[["endpoints"]])){
+      cli_msg("!" = "No endpoints found in WORCS project.")
     } else {
-      stop("No endpoints found in WORCS project.")
+      endpoints <- worcsfile[["endpoints"]]
+      replicates <- rep(x = TRUE, times = length(endpoints))
+      for(i in seq_along(endpoints)){
+        ep <- endpoints[i]
+        out <- try({
+          # Use absolute file path here
+          check_sum(file.path(dn_worcs, ep), old_cs = worcsfile[["checksums"]][[ep]], worcsfile = fn_worcs, error = TRUE)
+        }, silent = TRUE)
+        if(inherits(out, "try-error")){
+          cli_msg("x" = paste0("Endpoint '", ep, "' did not replicate."))
+          replicates[i] <- FALSE
+        } else {
+          cli_msg("v" = paste0("Endpoint '", ep, "' replicates."))
+        }
+      }
     }
+  })
+  testthat_passes <- TRUE
+  if(isTRUE(worcsfile[["testthat_endpoint"]])){
+    testthat_passes <- with_cli_try("Running `testthat` tests.", {
+      test_worcs(worcs_directory = dn_worcs)
+    })
+  }
 
-  }
-  endpoints <- worcsfile[["endpoints"]]
-  replicates <- rep(x = TRUE, times = length(endpoints))
-  for(i in seq_along(endpoints)){
-    ep <- endpoints[i]
-    out <- try({
-      #fn_endpoint <- path_abs_worcs(ep, dn_worcs)
-      # Use absolute file path here
-      check_sum(file.path(dn_worcs, ep), old_cs = worcsfile[["checksums"]][[ep]], worcsfile = fn_worcs, error = TRUE)
-    }, silent = TRUE)
-    if(inherits(out, "try-error")){
-      col_message("Endpoint '", ep, "' did not replicate.",
-                          verbose = verbose, success = FALSE)
-      replicates[i] <- FALSE
+  msg <- paste0(
+    ifelse(any(!replicates), paste0("Endpoints ", paste0(endpoints[which(!replicates)], collapse = ", "), " did not replicate. "), ""),
+    ifelse(!testthat_passes, "The `testthat` tests did not pass. ", ""),
+    "Have you run {.run snapshot_endpoints()}? Have you run {.run renv::snapshot()}? ",
+    ifelse(!testthat_passes, "Have you checked that your tests are correct?", ""))
+  if(any(!replicates) | isFALSE(testthat_passes)){
+    if(!interactive()){
+      stop(gsub("(\\{\\.run |\\})", "", msg))
     } else {
-      col_message("Endpoint '", ep, "' replicates.",
-                          verbose = verbose)
+      cli_msg("!" = msg)
     }
   }
-  if(!interactive()){
-    if(any(!replicates)){
-      # git_record <- system2("git", paste0('-C "', dirname(fn_worcs), '" ls-files --eol'), stdout = TRUE)
-      # git_record <- git_record[grepl(endpoints[1], git_record, fixed = TRUE)]
-      # stop("Endpoints ", paste0(endpoints[which(!replicates)], collapse = ", "), " did not replicate. Checksum of record: ", worcsfile[["checksums"]][[endpoints[1]]], ", local checksum: ", cs_fun(ep, fn_worcs), ", git ls: ", git_record)
-      stop("Endpoints ", paste0(endpoints[which(!replicates)], collapse = ", "), " did not replicate. Make sure that the endpoint snapshot and renv are up to date, and verify that differences are not due to Git changing the line endings of text files.")
-    }
-  }
-  return(invisible(all(replicates)))
+  return(invisible(all(replicates) & testthat_passes))
 }
 
 
@@ -207,14 +217,13 @@ check_endpoints <- function(worcs_directory = ".", verbose = TRUE, ...){
 #'  \code{\link[worcs]{snapshot_endpoints}}
 #' @export
 list_endpoints <- function(worcs_directory = ".", verbose = TRUE, ...){
-  dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory),
-                                                ".worcs")))
+  dn_worcs <- worcs_root(path = worcs_directory)
   fn_worcs <- file.path(dn_worcs, ".worcs")
   worcsfile <- yaml::read_yaml(fn_worcs)
-  if(is.null(worcsfile[["endpoints"]])){
+  if(is.null(worcsfile[["endpoints"]]) & is.null(worcsfile[["testthat_endpoint"]])){
     cli_msg("x" = "No endpoints found in WORCS project.")
   } else {
-    endpoints <- worcsfile[["endpoints"]]
+    endpoints <- na.omit(c(worcsfile[["endpoints"]], ifelse(is.null(worcsfile[["testthat_endpoint"]]), NA, "`testthat` test suite")))
     names(endpoints) <- rep("*", length(endpoints))
     do.call(cli_msg, as.list(endpoints))
   }
@@ -251,10 +260,13 @@ remove_endpoint <- function(filename = NULL, worcs_directory = ".", verbose = TR
   if(is.null(filename)){
     return(invisible(NULL))
   }
-  dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory),
-                                                ".worcs")))
+  dn_worcs <- worcs_root(path = worcs_directory)
   fn_worcs <- file.path(dn_worcs, ".worcs")
   worcsfile <- yaml::read_yaml(fn_worcs)
+  if(isTRUE(filename == "testthat")){
+    worcsfile[["testthat_endpoint"]] <- NULL
+    yaml::write_yaml(x = worcsfile, file = fn_worcs)
+  }
   if(is.null(worcsfile[["endpoints"]])){
     cli_msg("x" = "No endpoints found in WORCS project.")
   } else {

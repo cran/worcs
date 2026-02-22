@@ -98,7 +98,7 @@ closed_data <- function(data,
   Args$save_expression <- substitute(save_expression)
   Args$load_expression <- substitute(load_expression)
   Args[[1L]] <- str2lang("worcs:::save_data")
-  Args[["worcs_directory"]] <- dirname(check_recursive(file.path(normalizePath(worcs_directory), ".worcs")))
+  # Args[["worcs_directory"]] <- worcs_root(path = worcs_directory)
   eval(Args, parent.frame())
 }
 
@@ -122,7 +122,7 @@ save_data <- function(data,
     names(data) <- make.unique(namz)
   }
   # Find .worcs file
-  dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory), ".worcs")))
+  dn_worcs <- worcs_root(path = worcs_directory)
 
   if(grepl("[", filename, fixed = TRUE) | grepl("$", filename, fixed = TRUE)){
     stop("This filename is not allowed: ", filename, ". Please specify a legal filename.", call. = FALSE)
@@ -267,7 +267,7 @@ save_data <- function(data,
 check_data_resources <- function(dn_worcs = ".", worcsfile = NULL, verbose = TRUE){
   if(is.null(worcsfile)){
     # Filenames housekeeping
-    dn_worcs <- dirname(check_recursive(file.path(normalizePath(dn_worcs), ".worcs")))
+    dn_worcs <- worcs_root(path = dn_worcs)
     checkworcs(dn_worcs, iserror = TRUE)
     fn_worcs <- file.path(dn_worcs, ".worcs")
     # End filenames
@@ -369,7 +369,7 @@ load_data <- function(worcs_directory = ".", to_envir = TRUE, envir = parent.fra
   # directory if necessary.
 
   # Filenames housekeeping
-  dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory), ".worcs")))
+  dn_worcs <- worcs_root(path = worcs_directory)
   checkworcs(dn_worcs, iserror = TRUE)
 
   fn_worcs <- file.path(dn_worcs, ".worcs")
@@ -579,21 +579,6 @@ checkworcs <- function(worcs_directory, iserror = FALSE){
   return(TRUE)
 }
 
-check_recursive <- function(path){
-  tryCatch({ normalizePath(path) },
-           warning = function(e){
-             filename <- basename(path)
-             cur_dir <- dirname(path)
-             parent_dir <- dirname(dirname(path))
-             doesnt_exist <- !dir.exists(cur_dir)
-             if(cur_dir == parent_dir){
-               stop("No '.worcs' file found in this directory or any of its parent directories; either this is not a worcs project, or the working directory is not set to the project directory.", call. = FALSE)
-             } else if(doesnt_exist) {
-               stop("No '.worcs' file found, because the directory '", dirname(path), "' doesn't exists.", call. = FALSE)
-             }
-             check_recursive(file.path(parent_dir, filename))
-           })
-}
 
 write_gitig <- function(filename, ..., modify = TRUE){
   new_contents <- unlist(list(...))
@@ -622,37 +607,59 @@ write_gitig <- function(filename, ..., modify = TRUE){
 #' @param ... Objects of class \code{worcs_data}. The function will check if
 #' these are original or synthetic data.
 #' @param msg Expression containing the message to print in case not all
-#' \code{worcs_data} are original. This message may refer to \code{is_synth},
-#' a logical vector indicating which \code{worcs_data} objects are synthetic.
+#' \code{worcs_data} are original.
+#' @param worcs_directory Character, indicating the WORCS project directory to
+#' which to save data. The default value \code{"."} points to the current
+#' directory.
 #' @return No return value. This function is called for its side effect of
 #' printing a notification message.
 #' @examples
-#' df <- iris
-#' class(df) <- c("worcs_data", class(df))
-#' attr(df, "type") <- "synthetic"
-#' result <- capture.output(notify_synthetic(df, msg = "synthetic"))
+#' if(requireNamespace("withr", quietly = TRUE)){
+#'   withr::with_tempdir({
+#'     file.create(".worcs")
+#'     df <- iris
+#'     class(df) <- c("worcs_data", class(df))
+#'     attr(df, "type") <- "synthetic"
+#'     result <- capture.output(notify_synthetic(df, msg = "it is synthetic"))
+#'     if(!grepl("synthetic", result)) stop()
+#'     df <- df[1:10, ]
+#'     closed_data(df, codebook = NULL)
+#'     file.remove("df.csv")
+#'     result <- capture.output(notify_synthetic(msg = "synthetic"))
+#'     if(!grepl("synthetic", result)) stop()
+#'     if(requireNamespace("rmarkdown", quietly = TRUE)){
+#'     add_manuscript(manuscript = "github_document")
+#'     print(readLines("manuscript/manuscript.Rmd"))
+#'     rmarkdown::render("manuscript/manuscript.Rmd")
+#'     if(!any(grepl("reproduced using synthetic",
+#'     readLines("manuscript/manuscript.html")))) stop()
+#'     }
+#'   })
+#' }
 #' @rdname notify_synthetic
 #' @export
 #' @seealso closed_data synthetic add_synthetic
 notify_synthetic <- function(...,
-                             msg = NULL){
+                             msg = NULL,
+                             worcs_directory = "."){
   dots <- list(...)
-  cl <- as.list(match.call()[-1])
-  if(is.null(cl[["msg"]])){
-    msg <- quote(c("**Note that", ifelse(all(is_synth), "all", "some"), "of the data files used to generate this document are synthetic. The original data are not available. Synthetic data can be used to evaluate the reproducibility of the analysis code, but the results should not be substantively interpreted, and will likely deviate from the results generated using the original data. Please contact the authors for more information.**"))
-  }
-  msg <- substitute(msg)
-  if(length(dots) > 0){
+  if(isFALSE(length(dots) > 0)){
+    dn_worcs <- worcs_root(worcs_directory)
+    is_synth <- tryCatch({!check_data_resources(dn_worcs = dn_worcs,
+                                               worcsfile = yaml::read_yaml(file.path(dn_worcs, ".worcs")),
+                                               verbose = FALSE)$data_original}, error = function(e){FALSE})
+
+  } else {
     if(!all(sapply(dots, inherits, what = "worcs_data"))){
       stop("Some arguments provided to 'notify_synthetic()' are not objects of class 'worcs_data'.", call. = FALSE)
     }
     is_synth <- sapply(dots, attr, which = "type") == "synthetic"
-  } else {
-    worcs_data <- Filter(function(x) inherits(get(x), "worcs_data"), ls(name = parent.env(environment())))
-    is_synth <- sapply(worcs_data, function(x){ attr(get(x), which = "type") }) == "synthetic"
+  }
+  if(is.null(msg)){
+    msg <- "**Note that this document is reproduced using synthetic data. The original data are not available. Synthetic data can be used to evaluate the reproducibility of the analysis code, but the results should not be substantively interpreted, and will likely deviate from the results generated using the original data. Please contact the authors for more information.**"
   }
   if(any(is_synth)){
-    cat(eval(msg))
+    return(msg)
   }
 }
 
@@ -662,8 +669,7 @@ path_abs_worcs <- function(fn, dn_worcs = NULL, worcs_directory = "."){
     return(fn)
   }
   if (is.null(dn_worcs)) {
-    dn_worcs <- dirname(check_recursive(file.path(normalizePath(worcs_directory),
-                                                          ".worcs")))
+    dn_worcs <- worcs_root(path = worcs_directory)
   }
   invisible(checkworcs(dn_worcs, iserror = TRUE))
   dirn <- normalizePath(dn_worcs)
@@ -672,10 +678,7 @@ path_abs_worcs <- function(fn, dn_worcs = NULL, worcs_directory = "."){
 
 path_rel_worcs <- function(fn, dn_worcs = NULL, worcs_directory = "."){
   if (is.null(dn_worcs)) {
-    dn_worcs <-
-      dirname(check_recursive(file.path(
-        normalizePath(worcs_directory), ".worcs"
-      )))
+    dn_worcs <- worcs_root(path = worcs_directory)
   }
   invisible(checkworcs(dn_worcs, iserror = TRUE))
   # Normalize both
